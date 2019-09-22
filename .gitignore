@@ -102,3 +102,7 @@ venv.bak/
 
 # mypy
 .mypy_cache/
+.vscode/
+
+blob_storage/
+webrtc_event_logs/
