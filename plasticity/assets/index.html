@@ -4,23 +4,58 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <link rel="stylesheet" href="reboot.css">
+    <link rel="stylesheet" href="css/bootstrap-reboot.min.css">
+    <link rel="stylesheet" href="css/bootstrap.min.css">
     <script src="jquery.js"></script>
+    <script src="js/checksum.min.js"></script>
+    <script src="plastic.js"></script>
     <title>Plasticity</title>
 </head>
 <body>
-    <h1>Welcome to Plasticity</h1>
-    <pre style="font-family:'Fira Code'; font-size: 12px;" id="show"></pre>
+    <div id="main">
+        <ul class="nav nav-tabs" role="navlist">
+            <li class="active nav-item"><a data-toggle="tab" href="#ai">AIs</a></li>
+            <li class="nav-item"><a data-toggle="tab" href="#action">Actions</a></li>
+            <li class="nav-item"><a data-toggle="tab" href="#behavior">Behaviors</a></li>
+            <li class="nav-item"><a data-toggle="tab" href="#query">Queries</a></li>
+        </ul>
+        
+        <div class="tab-content">
+            <div id="ai" class="tab-pane fade in show active">
+                <h3>AIs</h3>
+                <select id="ai_list" size="20"></select>
+            </div>
+            <div id="action" class="tab-pane fade">
+                <h3>Actions</h3>
+                <p>Some content in menu 1.</p>
+            </div>
+            <div id="behavior" class="tab-pane fade">
+                <h3>Behaviors</h3>
+                <p>Some content in menu 2.</p>
+            </div>
+            <div id="query" class="tab-pane fade">
+                <h3>Queries</h3>
+                <p>Some content in menu 2.</p>
+            </div>
+        </div>
+    </div>
     <script>
+        let open_aiprog;
         function init() {
-            pywebview.api.init().then(response => {
-                $('#show').html(JSON.stringify(response, null, 4))
+            pywebview.api.init().then(async response => {
+                open_aiprog = new AiProgram(response);
+                populate_ais(open_aiprog);
             });
         }
         window.onbridge = () => {
-            console.log('Here');
             init();
         };
+        $(() => {
+            $('#ai_list').change(() => {
+                console.log($(this).children("option:selected").val());
+            });
+        });
     </script>
+    <script src="js/bootstrap.min.js"></script>
 </body>
 </html>

@@ -15,8 +15,7 @@ class Api:
     @util.json_serialize
     def init(self, params):
         reader = aamp.Reader(
-            Path(r"C:\Users\macad\Documents\BOTW Modding\FollowerYunobo\content\Actor\Pack\Npc_Follower_01\Actor\AIProgram\Npc_Follower_01.baiprog").read_bytes(),
-            track_strings=True
+            Path(r"C:\Users\macad\Documents\BOTW Modding\FollowerYunobo\content\Actor\Pack\Npc_Follower_01\Actor\AIProgram\Npc_Follower_01.baiprog").read_bytes()
         )
         pio = reader.parse()
         prog = ai.AiProgram(pio)

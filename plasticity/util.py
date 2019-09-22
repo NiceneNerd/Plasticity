@@ -1,4 +1,5 @@
 import aamp
+from functools import lru_cache
 import json
 from os import path
 from typing import Union
@@ -19,7 +20,8 @@ def json_serialize(f) -> str:
     def serializer(self, params):
         data = f(self, params)
         try:
-            return self._encoder.default(data)
+            json_data = self._encoder.default(data)
+            return json_data
         except TypeError:
             return data
     return serializer
@@ -29,7 +31,20 @@ def _try_name(key: int) -> Union[str, int]:
     try:
         return hash_to_name_map[key]
     except KeyError:
-        return key
+        return _try_numbered_names(key)
+
+def _try_numbered_names(key: int) -> Union[str, int]:
+    from zlib import crc32
+    for i in range(1000):
+        if crc32(f'AI_{i}'.encode()) == key:
+            return f'AI_{i}'
+        elif crc32(f'Action_{i}'.encode()) == key:
+            return f'Action_{i}'
+        elif crc32(f'Behavior_{i}'.encode()) == key:
+            return f'Behavior_{i}'
+        elif crc32(f'Query_{i}'.encode()) == key:
+            return f'Query_{i}'
+    return key
 
 
 class AiProgJsonEncoder(json.JSONEncoder):
@@ -53,8 +68,9 @@ class AiProgJsonEncoder(json.JSONEncoder):
         }
 
     def encode_plist(self, plist: ParameterList) -> dict:
+        lists = { _try_name(k): self.encode_plist(pl) for k, pl in plist.lists.items() }
         return {
-            'lists': { _try_name(k): self.encode_plist(pl) for k, pl in plist.lists.items() },
+            'lists': lists,
             'objects': { _try_name(k): self.encode_pobject(pobj) for k, pobj in plist.objects.items() },
         }
 
