@@ -16,6 +16,28 @@ def get_ai_defs() -> dict:
     return get_ai_defs.defs
 
 
+def get_trans_map() -> dict:
+    if not hasattr(get_trans_map, 'map'):
+        with open(path.join(EXEC_DIR, 'jpen.json'), 'r', encoding='utf-8') as file:
+            get_trans_map.map = json.load(file)
+    return get_trans_map.map
+
+
+def get_ai_classes() -> list:
+    classes = []
+    defs = get_ai_defs()
+    for key in defs:
+        classes.extend(list(defs[key].keys()))
+    return classes
+
+
+def cjk_detect(texts):
+    import re
+    if re.search("[\uac00-\ud7a3]", texts) or re.search("[\u3040-\u30ff]", texts) or re.search("[\u4e00-\u9FFF]", texts):
+        return True
+    return False
+
+
 def json_serialize(f) -> str:
     def serializer(self, params):
         data = f(self, params)
@@ -28,9 +50,15 @@ def json_serialize(f) -> str:
 
 
 def _try_name(key: int) -> Union[str, int]:
-    try:
-        return hash_to_name_map[key]
-    except KeyError:
+    import html
+    tmap = get_trans_map()
+    if key in hash_to_name_map:
+        s_key = hash_to_name_map[key]
+        if s_key in tmap:
+            return tmap[s_key].title()
+        else:
+            return s_key
+    else:
         return _try_numbered_names(key)
 
 def _try_numbered_names(key: int) -> Union[str, int]:
@@ -96,6 +124,8 @@ class AiProgJsonEncoder(json.JSONEncoder):
             encoded = self._encode_curve(param)
         elif type(param) in [aamp.String32, aamp.String64, aamp.String256]:
             encoded = self._encode_str(param)
+            if encoded in get_trans_map():
+                encoded = get_trans_map()[encoded]
         elif isinstance(param, aamp.U32):
             encoded = self._encode_u32(param)
         else:
