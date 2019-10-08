@@ -1,5 +1,6 @@
 import aamp
 from functools import lru_cache
+from pathlib import Path, WindowsPath, PosixPath
 import json
 from os import path
 from typing import Union
@@ -11,14 +12,14 @@ EXEC_DIR = path.dirname(path.realpath(__file__))
 
 def get_ai_defs() -> dict:
     if not hasattr(get_ai_defs, 'defs'):
-        with open(path.join(EXEC_DIR, 'aidef.json'), 'r', encoding='utf-8') as file:
+        with open(path.join(EXEC_DIR, 'resources', 'aidef.json'), 'r', encoding='utf-8') as file:
             get_ai_defs.defs = json.load(file)
     return get_ai_defs.defs
 
 
 def get_trans_map() -> dict:
     if not hasattr(get_trans_map, 'map'):
-        with open(path.join(EXEC_DIR, 'jpen.json'), 'r', encoding='utf-8') as file:
+        with open(path.join(EXEC_DIR, 'resources', 'jpen.json'), 'r', encoding='utf-8') as file:
             get_trans_map.map = json.load(file)
     return get_trans_map.map
 
@@ -54,10 +55,10 @@ def _try_name(key: int) -> Union[str, int]:
     tmap = get_trans_map()
     if key in hash_to_name_map:
         s_key = hash_to_name_map[key]
-        if s_key in tmap:
+        """ if s_key in tmap:
             return tmap[s_key].title()
-        else:
-            return s_key
+        else: """
+        return s_key
     else:
         return _try_numbered_names(key)
 
@@ -84,6 +85,8 @@ class AiProgJsonEncoder(json.JSONEncoder):
             return self.encode_plist(o)
         elif isinstance(o, ParameterObject):
             return self.encode_pobject(o)
+        elif isinstance(o, (Path, WindowsPath, PosixPath)):
+            return str(o)
         else:
             return super().default(o)
 
@@ -160,3 +163,86 @@ class AiProgJsonEncoder(json.JSONEncoder):
 
     def _encode_u32(self, u32: aamp.U32) -> int:
         return int(u32)
+
+
+class AiProgJsonDecoder(json.JSONDecoder):
+    def __init__(self, *args, **kwargs):
+        json.JSONDecoder.__init__(self, object_hook=self.object_hook, *args, **kwargs)
+
+    def object_hook(self, obj):
+        try:
+            iter(obj)
+        except:
+            return obj
+        if isinstance(obj, ParameterList) or isinstance(obj, ParameterIO)\
+           or isinstance(obj, ParameterObject) or isinstance (obj, str) or isinstance (obj, int)\
+           or isinstance(obj, aamp.String32):
+            return obj
+        if 'version' in obj:
+            return self._to_pio(obj)
+        elif 'lists' in obj:
+            return self._to_plist(obj)
+        elif 'params' in obj:
+            return self._to_pobj(obj)
+        elif 'int' in obj:
+            return int(obj['int'])
+        elif 'str' in obj:
+            return str(obj['str'])
+        elif 'float' in obj:
+            return float(obj['float'])
+        elif 'String32' in obj:
+            return aamp.String32(obj['String32'])
+        elif 'bool' in obj:
+            return obj['bool']
+        elif 'Vec3' in obj:
+            return aamp.Vec3(*obj['Vec3'])
+        else:
+            return obj
+
+    def _to_pobj(self, obj) -> aamp.ParameterObject:
+        if isinstance(obj, ParameterObject):
+            return obj
+        pobj = aamp.ParameterObject()
+        if obj['params']:
+            for param, val in obj['params'].items():
+                if param.isnumeric():
+                    pobj.params[int(param)] = self.object_hook(val)
+                else:
+                    pobj.set_param(param, self.object_hook(val))
+        return pobj
+
+    def _to_plist(self, obj) -> aamp.ParameterList:
+        plist = aamp.ParameterList()
+        if isinstance(obj, ParameterList):
+            return obj
+        if obj['lists']:
+            for name, content in obj['lists'].items():
+                if name.isnumeric():
+                    plist.lists[int(name)] = self._to_plist(content)
+                else:
+                    plist.set_list(name, self._to_plist(content))
+        if obj['objects']:
+            for name, content in obj['objects'].items():
+                if content['params']:
+                    if name.isnumeric():
+                        plist.objects[int(name)] = self._to_pobj(content)
+                    else:
+                        plist.set_object(name, self._to_pobj(content))
+        return plist
+
+    def _to_pio(self, obj) -> aamp.ParameterIO:
+        pio = aamp.ParameterIO(obj['type'], obj['version'])
+        if obj['lists']:
+            for name, content in obj['lists'].items():
+                if name.isnumeric():
+                    pio.lists[int(name)] = self._to_plist(content)
+                else:
+                    pio.set_list(name, self._to_plist(content))
+        if obj['objects']:
+            for name, content in obj['objects'].items():
+                if content['params']:
+                    if name.isnumeric():
+                        pio.objects[int(name)] = self._to_pobj(content)
+                    else:
+                        pio.set_object(name, self._to_pobj(content))
+        return pio

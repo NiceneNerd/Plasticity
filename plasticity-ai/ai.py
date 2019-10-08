@@ -104,22 +104,47 @@ class AiProgram:
     def index(self, item: ParameterList) -> int:
         return self.items().index(item)
 
+    def index_from_label(self, label: str) -> int:
+        if label.startswith('AI'):
+            return int(label.replace('AI_', ''))
+        elif label.startswith('Action'):
+            return int(label.replace('Action_', '')) + self.get_actions_offset()
+        elif label.startswith('Behavior'):
+            return int(label.replace('Behavior_', '')) + self.get_behaviors_offset()
+        elif label.startswith('Query'):
+            return int(label.replace('Query_', '')) + self.get_queries_offset()
+        else:
+            raise ValueError(f'{label} is not a valid AI entry.')
+
     def _remove_refs(self, idx: int):
         self._update_indexes(idx, 0)
 
     def _update_indexes(self, old_idx: int, new_idx: int):
         refs = self.get_references(old_idx)
+        for param in refs['demo']:
+            self._aiprog.list('param_root').object('DemoAIActionIdx').params[param] = new_idx
+        for ai_idx, child_list in refs['ai']['child'].items():
+            for child in child_list:
+                self._ais[ai_idx].object('ChildIdx').params[child] = new_idx
+        for be_idx, be_list in refs['ai']['behavior'].items():
+            for be in be_list:
+                self._ais[be_idx].object('BehaviorIdx').params[be] = \
+                    new_idx - self.get_behaviors_offset()
+        for be_idx, be_list in refs['action']['behavior'].items():
+            for be in be_list:
+                self._actions[be_idx].object('BehaviorIdx').params[be] = \
+                    new_idx - self.get_behaviors_offset()             
 
     def add_ai(self, item: ParameterList) -> int:
         item = deepcopy(item)
-        for thing in [*self._actions, *self._behaviors, *self._queries]:
+        for thing in reversed([*self._actions, *self._behaviors, *self._queries]):
             self._update_indexes(self.index(thing), self.index(thing) + 1)
         if crc32(b'ChildIdx') in item.objects:
             for param in item.object('ChildIdx').params:
-                item.object('ChildIdx').params[param] = 0
+                item.object('ChildIdx').params[param] = -1
         if crc32(b'BehaviorIdx') in item.objects:
             for param in item.object('BehaviorIdx').params:
-                item.object('BehaviorIdx').params[param] = 0
+                item.object('BehaviorIdx').params[param] = -1
         self._ais.append(item)
         return self.index(item)
 
@@ -153,14 +178,40 @@ class AiProgram:
             idx = self.index(item)
         for i in [i for i, stuff in enumerate(self.items()) if i >= idx]:
             self._update_indexes(i, i - 1)
-        if item in self._ais:
-            self._ais.remove(item)
-        elif item in self._actions:
-            self._actions.remove(item)
-        elif item in self._behaviors:
-            self._behaviors.remove(item)
+        if item[0] == 'ai':
+            self._ais.remove(item[1])
+        elif item[0] == 'action':
+            self._actions.remove(item[1])
+        elif item[0] == 'behavior':
+            self._behaviors.remove(item[1])
         else:
             self._queries.remove(item)
+
+    def generate_pio(self) -> aamp.ParameterIO:
+        from zlib import crc32
+        pio = deepcopy(self._aiprog)
+        if self._ais:
+            ais_list = aamp.ParameterList()
+            for idx, ai in enumerate(self._ais):
+                ais_list.set_list(f'AI_{idx}', ai)
+            pio.list('param_root').set_list('AI', ais_list)
+        if self._actions:
+            actions_list = aamp.ParameterList()
+            for idx, action in enumerate(self._actions):
+                actions_list.set_list(f'Action_{idx}', action)
+            pio.list('param_root').set_list('Action', actions_list)
+        if self._behaviors:
+            behaviors_list = aamp.ParameterList()
+            for idx, behavior in enumerate(self._behaviors):
+                behaviors_list.set_list(f'Behavior_{idx}', behavior)
+            pio.list('param_root').set_list('Behavior', behaviors_list)
+        if self._queries:
+            queries_list = aamp.ParameterList()
+            for idx, query in enumerate(self._queries):
+                queries_list.set_list(f'Query_{idx}', query)
+            pio.list('param_root').set_list('Query', queries_list)
+        self._aiprog = pio
+        return pio
 
 _param_type_map = {
     'String': aamp.String32,
@@ -172,29 +223,32 @@ _param_type_map = {
 
 class ProgramAI(ParameterList):
 
-    def __init__(self, def_name: str, name: str = '', group: str = ''):
+    def __init__(self, def_name: str, type: str, name: str = '', group: str = ''):
         super().__init__()
         defs = util.get_ai_defs()
-        if def_name in defs['AIs']:
-            ai_def = defs['AIs'][def_name]
+        key = 'AIs' if type == 'ai' else 'Actions' if type == 'action'\
+              else 'Behaviors' if type == 'behavior' else 'Querys' if type == 'query' else ''
+        if def_name in defs[key]:
+            ai_def = defs[key][def_name]
             self.lists = {}
             self.objects = {
-                crc32(b'Def'): ParameterObject(),
-                crc32(b'ChildIdx'): ParameterObject(),
-                crc32(b'BehaviorIdx'): ParameterObject(),
-                crc32(b'SInst') : ParameterObject()
+                crc32(b'Def'): ParameterObject()
             }
             self.object('Def').set_param('ClassName', aamp.String32(def_name))
             self.object('Def').set_param('Name', name)
             self.object('Def').set_param('GroupName', group)
-            for child in ai_def['childs']:
-                self.object('ChildIdx').set_param(child, 0)
-            for sinst in ai_def['StaticInstParams']:
-                if 'Value' in sinst:
-                    val = sinst['Value']
-                else:
-                    val = _param_type_map[sinst['Type']]()
-                self.object('SInst').set_param(sinst['Name'], val)
+            if 'childs' in ai_def:
+                self.set_object('ChildIdx', ParameterObject())
+                for child in ai_def['childs']:
+                    self.object('ChildIdx').set_param(child, -1)
+            if 'StaticInstParams' in ai_def:
+                self.set_object('SInst', ParameterObject())
+                for sinst in ai_def['StaticInstParams']:
+                    if 'Value' in sinst:
+                        val = sinst['Value']
+                    else:
+                        val = _param_type_map[sinst['Type']]()
+                    self.object('SInst').set_param(sinst['Name'], val)
         else:
             raise ValueError(f'{def_name} is not a valid AI')
 
