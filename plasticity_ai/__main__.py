@@ -18,7 +18,7 @@ class Api:
 
     @util.json_serialize
     def open_file(self, params):
-        result = window.create_file_dialog(webview.OPEN_DIALOG, file_types=(
+        result = self.window.create_file_dialog(webview.OPEN_DIALOG, file_types=(
             'AI Programs (*.baiprog)', 'All Files (*.*)'
         ))
         if result:
@@ -35,7 +35,7 @@ class Api:
         if 'path' in params and params['path']:
             open_path = Path(params['path'])
         else:
-            result = window.create_file_dialog(webview.SAVE_DIALOG, file_types=(
+            result = self.window.create_file_dialog(webview.SAVE_DIALOG, file_types=(
                 'AI Programs (*.baiprog)', 'All Files (*.*)'
             ))
             if result:
@@ -76,10 +76,9 @@ class Api:
 
 def main():
     api = Api()
-    os.chdir(util.EXEC_DIR)
-    window = webview.create_window('Plasticity', url=os.path.join('assets', 'index.html'), js_api=api, text_select=DEBUG, width=1024)
+    api.window = webview.create_window('Plasticity', url=os.path.join(util.EXEC_DIR, 'assets', 'index.html'), js_api=api, text_select=DEBUG, width=1024)
     use_cef = find_spec('cefpython3') is not None
-    webview.start(args=window, gui='cef' if use_cef else '', debug=DEBUG)
+    webview.start(args=api.window, gui='cef' if use_cef else '', debug=DEBUG)
 
 if __name__ == "__main__":
     main()
