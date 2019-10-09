@@ -5,7 +5,7 @@ with open('docs/README.md', 'r') as readme:
 
 setup(
     name='plasticity-ai',
-    version='0.1',
+    version='0.1.1',
     author='NiceneNerd',
     author_email='macadamiadaze@gmail.com',
     description='An AI program editor for The Legend of Zelda: Breath of the Wild',
