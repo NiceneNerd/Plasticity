@@ -1,5 +1,5 @@
-recursive-include plasticity-ai/assets/css *
-recursive-include plasticity-ai/assets/icon *
-recursive-include plasticity-ai/assets/dist *
-recursive-include plasticity-ai/resources *
-include plasticity-ai/assets/index.html
+recursive-include plasticity_ai/assets/css *
+recursive-include plasticity_ai/assets/icon *
+recursive-include plasticity_ai/assets/dist *
+recursive-include plasticity_ai/resources *
+include plasticity_ai/assets/index.html

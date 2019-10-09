@@ -13,9 +13,9 @@ setup(
     long_description_content_type = 'text/markdown',
     url = 'https://github.com/NiceneNerd/Plasticity/',
     include_package_data = True,
-    packages = ['plasticity-ai'],
+    packages = ['plasticity_ai'],
     entry_points = {
-        'gui_scripts': [
+        'console_scripts': [
             'plasticity=plasticity_ai.__main__:main'
         ]
     },

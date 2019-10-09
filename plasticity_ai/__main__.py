@@ -1,5 +1,6 @@
 from importlib.util import find_spec
 import json
+import os
 from pathlib import Path
 import aamp
 import webview
@@ -73,8 +74,12 @@ class Api:
         return new_prog.generate_pio()
 
 
-if __name__ == "__main__":
+def main():
     api = Api()
-    window = webview.create_window('Plasticity', url='assets/index.html', js_api=api, text_select=DEBUG, width=1024)
+    os.chdir(util.EXEC_DIR)
+    window = webview.create_window('Plasticity', url=os.path.join('assets', 'index.html'), js_api=api, text_select=DEBUG, width=1024)
     use_cef = find_spec('cefpython3') is not None
     webview.start(args=window, gui='cef' if use_cef else '', debug=DEBUG)
+
+if __name__ == "__main__":
+    main()
