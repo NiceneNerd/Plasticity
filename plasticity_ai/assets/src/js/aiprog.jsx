@@ -101,6 +101,15 @@ export class AiProgram {
         return [...this._ais, ...this._actions, ...this._behaviors, ...this._queries].map(item => new AiItem(item));
     }
 
+    get labeled_items() {
+        return {
+            ...this.ais,
+            ...this.actions,
+            ...this.behaviors,
+            ...this.queries
+        }
+    }
+
     get roots() {
         return Object.values(this.ais).filter(item => !item.GroupName);
     }
@@ -180,12 +189,11 @@ export class AiItem {
     }
 }
 
-export function get_ai_label(idx, ai) {
+export function get_ai_label(idx, ai, trans) {
     if (ai.Name == undefined && ai.ClassName == undefined)
         ai = new AiItem(ai);
-    return ((ai.Name)
-            ? ((ai.Name || ai.Name) + `: `)
-            : '') +
+    return `${idx}: ` + 
+        ((ai.Name) && ((trans ? try_trans(ai.Name, trans) : ai.Name) + ` — `)) +
         `${ai.ClassName}`; /* `${idx.replace(/[A-Za-z]+_/, '')}. ` + */
 }
 

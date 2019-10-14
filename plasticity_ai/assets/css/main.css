@@ -45,6 +45,10 @@ html, body, #root {
     max-height: 100%;
 }
 
+.row > div {
+    flex: 1;
+}
+
 a {
     color: #3899D8;
 }
@@ -137,17 +141,33 @@ select, input {
 .tab-pane > .row {
     height: 100%;
     overflow: hidden;
+    padding: 0 1rem;
+    flex-wrap: nowrap;
 }
 
 .info {
     overflow-y: auto;
+    overflow-x: hidden;
+}
+
+.info > .row {
+    flex-wrap: nowrap;
+    margin: 0;
+}
+
+.info > .row > :first-child {
+    margin-right: 1rem;
 }
 
 .prog_list {
     display: flex;
+    flex: 0 !important;
     flex-direction: column;
     height: 100%;
     max-height: 100%;
+    max-width: 30%;
+    white-space: nowrap;
+    margin-right: 1rem;
 }
 
 .items_list {
@@ -178,7 +198,12 @@ select, input {
 }
 
 .params select, .params input:not([type='checkbox']) {
+    min-width: 3.5rem;
     width: 100%;
+}
+
+.params input:not([type='checkbox']) {
+    padding: 1px 0.25rem;
 }
 
 .vec3 {
@@ -204,6 +229,21 @@ h3 {
 
 select {
     max-width: 100%;
+}
+
+.info-box {
+    margin-bottom: 1rem;
+    border-radius: 0.25rem;
+    padding: 0.5rem 0.75rem;
+    background: #232529;
+}
+
+.table {
+    color: inherit;
+}
+
+.table td, .table th, .table thead th {
+    border: 0;
 }
 
 .content {
@@ -285,3 +325,49 @@ select {
 .fab-away {
     bottom: -90px;
 }
+
+#loader {
+    top: 40%;
+    width: 100vw;
+    position: fixed;
+}
+
+#loader > div {
+    margin: 0 auto;
+}
+
+.lds-ring {
+    display: block;
+    width: 64px;
+    height: 64px;
+  }
+  .lds-ring div {
+    box-sizing: border-box;
+    display: block;
+    position: absolute;
+    width: 51px;
+    height: 51px;
+    margin: 6px;
+    border: 6px solid #fff;
+    border-radius: 50%;
+    animation: lds-ring 1.2s cubic-bezier(0.5, 0, 0.5, 1) infinite;
+    border-color: #fff transparent transparent transparent;
+  }
+  .lds-ring div:nth-child(1) {
+    animation-delay: -0.45s;
+  }
+  .lds-ring div:nth-child(2) {
+    animation-delay: -0.3s;
+  }
+  .lds-ring div:nth-child(3) {
+    animation-delay: -0.15s;
+  }
+  @keyframes lds-ring {
+    0% {
+      transform: rotate(0deg);
+    }
+    100% {
+      transform: rotate(360deg);
+    }
+  }
+  

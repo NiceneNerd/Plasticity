@@ -30,11 +30,18 @@ export class ParamInput extends Component {
                 new_val = {'float': parseFloat($(`#${this.props.param}`).val())};
                 break;
             case 'Vec3':
-                new_val = {'Vec3': [
-                    parseFloat($(`#${this.props.param}.x`).val()),
-                    parseFloat($(`#${this.props.param}.y`).val()),
-                    parseFloat($(`#${this.props.param}.z`).val())
-                ]};
+                new_val = [...this.state.value];
+                switch(e.currentTarget.dataset.axis) {
+                    case 'x':
+                        new_val[0] = parseFloat(e.currentTarget.value);
+                        break;
+                    case 'y':
+                        new_val[1] = parseFloat(e.currentTarget.value);
+                        break;
+                    case 'z':
+                        new_val[2] = parseFloat(e.currentTarget.value);
+                }
+                new_val = {'Vec3': new_val}
                 break;
             case 'String32':
             case 'str':
@@ -43,7 +50,7 @@ export class ParamInput extends Component {
             default:
                 throw 'Uh oh';
         }
-        this.props.onChange(this.props.param, new_val);
+        this.setState({ value: new_val[this.type] }, () => this.props.onChange(this.props.param, new_val));
     }
 
     render() { 
@@ -53,13 +60,13 @@ export class ParamInput extends Component {
             case 'int':
             case 'u32':
             case 'float':
-                return <input type="number" id={this.props.param} onChange={this.value_changed.bind(this)} value={this.state.value || 0} />
+                return <input type="number" id={this.props.param} onChange={this.value_changed.bind(this)} value={this.state.value || ''} />
             case 'Vec3':
                 return (
                     <div className="vec3">
-                        <input type="number" id={this.props.param + '.x'} onChange={this.value_changed.bind(this)} value={this.state.value[0]} />
-                        <input type="number" id={this.props.param + '.y'} onChange={this.value_changed.bind(this)} value={this.state.value[1]} />
-                        <input type="number" id={this.props.param + '.z'} onChange={this.value_changed.bind(this)} value={this.state.value[2]} />
+                        <input type="number" data-axis="x" id={this.props.param + 'x'} onChange={this.value_changed.bind(this)} value={this.state.value[0] || ''} />
+                        <input type="number" data-axis="y" id={this.props.param + 'y'} onChange={this.value_changed.bind(this)} value={this.state.value[1] || ''} />
+                        <input type="number" data-axis="z" id={this.props.param + 'z'} onChange={this.value_changed.bind(this)} value={this.state.value[2] || ''} />
                     </div>
                 )
             default:
@@ -69,6 +76,7 @@ export class ParamInput extends Component {
 }
 
 export class AiItemsList extends Component {
+    static contextType = PlasticContext;
     constructor(props) {
         super(props);
     }
@@ -77,8 +85,8 @@ export class AiItemsList extends Component {
         return (
             <React.Fragment>
                 {Object.keys(this.props.items).map(key => {
-                    return <option key={key} value={key}>
-                        {(this.props.use_label) ? get_ai_label(key, this.props.items[key]) : key }
+                    return <option key={key} value={this.props.hasOwnProperty('keyMap') ? this.props.keyMap[key] : key}>
+                        {(this.props.use_label) ? get_ai_label(key, this.props.items[key], this.context.trans) : key }
                     </option>;
                 })}
             </React.Fragment>

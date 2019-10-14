@@ -29,7 +29,10 @@ class Api:
                     'path': open_path.as_posix(),
                     'pio': self._encoder.default(pio)
                 }
-        return {}
+        else:
+            return {
+                'path': ''
+            }
 
     def save_file(self, params):
         if 'path' in params and params['path']:

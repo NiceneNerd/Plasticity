@@ -50,14 +50,19 @@ def json_serialize(f) -> str:
     return serializer
 
 
+def add_hashes():
+    if not hasattr(add_hashes, 'done'):
+        with open(path.join(EXEC_DIR, 'resources', 'hashes.json'), 'r', encoding='utf-8') as h_file:
+            new_hashes = { int(k): v for k,v in json.load(h_file).items() }
+        hash_to_name_map.update(new_hashes)
+        add_hashes.done = True
+
+
 def _try_name(key: int) -> Union[str, int]:
-    import html
+    add_hashes()
     tmap = get_trans_map()
     if key in hash_to_name_map:
         s_key = hash_to_name_map[key]
-        """ if s_key in tmap:
-            return tmap[s_key].title()
-        else: """
         return s_key
     else:
         return _try_numbered_names(key)
