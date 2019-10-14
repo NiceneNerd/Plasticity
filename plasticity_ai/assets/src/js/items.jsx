@@ -97,7 +97,7 @@ export default class ProgramItemsView extends Component {
                 </div>
                 <div className="info">
                     <div className="row">
-                        <div>
+                        <div className="main-col">
                             <div className="info-box">
                                 <h2>Definition</h2>
                                 <table id={`${this.props.type}_def`} className="params">
@@ -149,9 +149,18 @@ export default class ProgramItemsView extends Component {
                                                     <tr key={param}>
                                                         <td dangerouslySetInnerHTML={{__html: try_trans(param, this.context.trans)}} />
                                                         <td>
+                                                            <button className="btn" data-toggle="popover" title={`${param} Info`} data-content={
+                                                                `<strong>Original Name:</strong> ${param}\n` +
+                                                                (this.props.classes[this.state.selected.ClassName].childs[param].length > 0
+                                                                    ? `<strong>Provides Args:</strong> ${this.props.classes[this.state.selected.ClassName].childs[param].map(param => param['Name']).join('<br>')}`
+                                                                    : '<strong>No Args</strong>')}>
+                                                                <i className="material-icons">info</i>
+                                                            </button>
+                                                        </td>
+                                                        <td>
                                                             <select id={`${this.props.type}_child_${param}`} data-param={param} onChange={(e) => this.update_child(e, param)}
                                                                 value={Object.keys(this.context.aiprog.items)[this.state.selected.ChildIdx[param].int]}>
-                                                                <AiItemsList keyMap={this.key_map} 
+                                                                <AiItemsList keyMap={this.key_map} args={this.props.classes[this.state.selected.ClassName].childs[param] || []}
                                                                     items={this.context.aiprog.labeled_items} use_label={true} />
                                                             </select>
                                                         </td>
@@ -186,7 +195,7 @@ export default class ProgramItemsView extends Component {
                                 }
                         </div>
                         {this.state.selected && (this.state.selected.SInst || this.state.selected.BehaviorIdx) &&
-                            <div style={{minWidth: 'fit-content'}}>
+                            <div className="main-col">
                                 {this.state.selected && this.state.selected.SInst &&
                                     <div class='info-box' id={`${this.props.type}_sinst`}>
                                         <h2>Parameters</h2>
@@ -232,6 +241,9 @@ export default class ProgramItemsView extends Component {
                 </div>
                 {this.context.classes && 
                     <NewAiModal id={`new_${this.props.type}_modal`} classes={this.props.classes} onSelect={this.add_new_ai.bind(this)} />}
+                <script>
+                    $('[data-toggle="popover"]').popover()
+                </script>
             </div>
         );
     }

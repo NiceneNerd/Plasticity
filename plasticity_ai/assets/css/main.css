@@ -45,7 +45,8 @@ html, body, #root {
     max-height: 100%;
 }
 
-.row > div {
+.main-col {
+    min-width: min-content;
     flex: 1;
 }
 

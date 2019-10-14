@@ -208,7 +208,7 @@ export default class PlasticityRoot extends Component {
                 </div>
                 {this.state.loading && 
                     <div id="loader">
-                        <div class="lds-ring"><div></div><div></div><div></div><div></div></div>
+                        <div className="lds-ring"><div></div><div></div><div></div><div></div></div>
                     </div>}
             </React.Fragment>
         );

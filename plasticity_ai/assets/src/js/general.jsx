@@ -81,10 +81,20 @@ export class AiItemsList extends Component {
         super(props);
     }
 
+    filter_by_args(key) {
+        if (!this.props.hasOwnProperty('args')) return true;
+        let type = key.startsWith('AI') ? 'AIs' : (key.startsWith('Action') ? 'Actions' : '');
+        if (!type) return false;
+        if (this.context.classes[type][this.props.items[key].ClassName].DynamicInstParams == undefined) return true;
+        const d_names = this.context.classes[type][this.props.items[key].ClassName].DynamicInstParams.map(param => param['Name']);
+        const p_names = this.props.args.map(param => param['Name']);
+        return d_names.every(param => p_names.includes(param));
+    }
+
     render() {
         return (
             <React.Fragment>
-                {Object.keys(this.props.items).map(key => {
+                {Object.keys(this.props.items).filter(this.filter_by_args.bind(this)).map(key => {
                     return <option key={key} value={this.props.hasOwnProperty('keyMap') ? this.props.keyMap[key] : key}>
                         {(this.props.use_label) ? get_ai_label(key, this.props.items[key], this.context.trans) : key }
                     </option>;
