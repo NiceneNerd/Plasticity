@@ -12,12 +12,14 @@ export default class ProgramItemsView extends Component {
             selected: null,
             modified: false
         }
-        console.log(this.props.classes)
     }
 
     ai_select_change = (event) => {
         const ai = new AiItem(this.props.items[event.target.value]._plist);
-        this.setState({selected: ai, modified: false});
+        this.setState(
+            {selected: ai, modified: false},
+            () => $(`#${this.props.type}_children [data-toggle="popover"]`).popover({html: true, trigger: 'focus'})
+        );
     }
 
     class_names = () => {
@@ -67,6 +69,16 @@ export default class ProgramItemsView extends Component {
     push_update() {
         this.props.onUpdate($(`#${this.props.type}_list`).val(), this.state.selected._plist);
         this.setState({modified: false});
+    }
+
+    child_info(param) {
+        return (this.props.classes[this.state.selected.ClassName].childs[param] && 
+                this.props.classes[this.state.selected.ClassName].childs[param].length > 0
+            ? `<table><thead><tr><th>Name</th><th>Type</th></tr></thead><tbody>${
+                this.props.classes[this.state.selected.ClassName].childs[param]
+                    .map(param => `<tr><td>${param['Name']}</td><td>${param['Type']
+                }</td></tr>`).join('')}</tbody></table>`
+            : 'No arguments');
     }
 
     get key_map() {
@@ -149,13 +161,11 @@ export default class ProgramItemsView extends Component {
                                                     <tr key={param}>
                                                         <td dangerouslySetInnerHTML={{__html: try_trans(param, this.context.trans)}} />
                                                         <td>
-                                                            <button className="btn" data-toggle="popover" title={`${param} Info`} data-content={
-                                                                `<strong>Original Name:</strong> ${param}\n` +
-                                                                (this.props.classes[this.state.selected.ClassName].childs[param].length > 0
-                                                                    ? `<strong>Provides Args:</strong> ${this.props.classes[this.state.selected.ClassName].childs[param].map(param => param['Name']).join('<br>')}`
-                                                                    : '<strong>No Args</strong>')}>
+                                                            <a tabIndex="0" className="btn btn-popup" data-toggle="popover" role="button"
+                                                                title={`${param} <span class="d-inline-block">(${try_trans(param, this.context.trans)})</span>`}
+                                                                data-content={this.child_info(param)} data-placement="top" data-trigger="focus">
                                                                 <i className="material-icons">info</i>
-                                                            </button>
+                                                            </a>
                                                         </td>
                                                         <td>
                                                             <select id={`${this.props.type}_child_${param}`} data-param={param} onChange={(e) => this.update_child(e, param)}
@@ -241,9 +251,6 @@ export default class ProgramItemsView extends Component {
                 </div>
                 {this.context.classes && 
                     <NewAiModal id={`new_${this.props.type}_modal`} classes={this.props.classes} onSelect={this.add_new_ai.bind(this)} />}
-                <script>
-                    $('[data-toggle="popover"]').popover()
-                </script>
             </div>
         );
     }

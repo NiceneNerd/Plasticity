@@ -61,6 +61,31 @@ select, input {
     color: #f0f0f0;
 }
 
+.btn-popup, .btn-popup:hover {
+    color: #fff;
+    cursor: pointer;
+    padding: 0;
+}
+
+.btn-popup .material-icons {
+    font-size: 16px;
+}
+
+.popover, .popover-body {
+    background-color: #212121;
+    color: #fff;
+}
+
+.popover-body table {
+    width: 100%;
+}
+
+.popover-header {
+    background-color: #17181b;
+    color: #fff;
+    border-color: #2f3136;
+}
+
 .btn-icon {
     color: white;
     padding: .15rem .2rem;

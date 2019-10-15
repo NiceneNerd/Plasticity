@@ -13,9 +13,18 @@
     <link rel="stylesheet" href="css/main.css">
     <link rel="stylesheet" href="icon/material-icons.css">
     <script src="https://code.jquery.com/jquery-3.4.1.js" integrity="sha256-WpOohJOqMqqyKL9FccASB9O0KwACQJpFTUBLTYOVvVU=" crossorigin="anonymous"></script>
+    <script src="dist/popper.min.js"></script>
     <script src="dist/bootstrap.min.js"></script>
-    <script src="dist/bootstrap.bundle.min.js"></script>
     <script src="dist/bundle.js"></script>
+    <script>
+        $.fn.popover.Constructor.Default.whiteList.table = [];
+        $.fn.popover.Constructor.Default.whiteList.tr = [];
+        $.fn.popover.Constructor.Default.whiteList.td = [];
+        $.fn.popover.Constructor.Default.whiteList.th = [];
+        $.fn.popover.Constructor.Default.whiteList.div = [];
+        $.fn.popover.Constructor.Default.whiteList.tbody = [];
+        $.fn.popover.Constructor.Default.whiteList.thead = [];
+    </script>
 </head>
 
 <body>
