@@ -71,6 +71,13 @@ export default class ProgramItemsView extends Component {
         this.setState({modified: false});
     }
 
+    child_title(param) {
+        return `${param} ` +
+            (param != try_trans(param, this.context.trans)
+                ? `<span class="d-inline-block">(${try_trans(param, this.context.trans)})</span>`
+                : '');
+    }
+
     child_info(param) {
         return (this.props.classes[this.state.selected.ClassName].childs[param] && 
                 this.props.classes[this.state.selected.ClassName].childs[param].length > 0
@@ -162,8 +169,8 @@ export default class ProgramItemsView extends Component {
                                                         <td dangerouslySetInnerHTML={{__html: try_trans(param, this.context.trans)}} />
                                                         <td>
                                                             <a tabIndex="0" className="btn btn-popup" data-toggle="popover" role="button"
-                                                                title={`${param} <span class="d-inline-block">(${try_trans(param, this.context.trans)})</span>`}
-                                                                data-content={this.child_info(param)} data-placement="top" data-trigger="focus">
+                                                                title={this.child_title(param)} data-content={this.child_info(param)}
+                                                                data-placement="top" data-trigger="focus">
                                                                 <i className="material-icons">info</i>
                                                             </a>
                                                         </td>

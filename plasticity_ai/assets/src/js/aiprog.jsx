@@ -114,11 +114,6 @@ export class AiProgram {
         return Object.values(this.ais).filter(item => !item.GroupName);
     }
 
-    get_item_refs(idx) {
-        return this.items.map(item => {
-        });
-    }
-
     get_item_parents(idx) {
         return (idx > -1) ? this.items.filter(item => item.child_list && item.child_list.includes(idx)) : [];
     }
@@ -143,11 +138,13 @@ export class AiProgram {
         return -1;
     }
 
-    get_tree(trans_map) {
-        return this.roots.map(r => {
+    async get_tree(trans_map) {
+        return await pywebview.api
+            .get_ai_tree({pio: this.pio}) || [];
+        /* return this.roots.map(r => {
             const idx = this.find_item(r);
             return this._create_ai_tree(idx, trans_map)
-        });
+        }); */
     }
 
     _create_ai_tree(idx, trans_map) {

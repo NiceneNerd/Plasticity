@@ -56,6 +56,11 @@ class Api:
     def create_prog_item(self, params):
         return ai.ProgramAI(params['def'], params['type'])
 
+    #@util.json_serialize
+    def get_ai_tree(self, params):
+        tree = ai.AiProgram(self._decoder.object_hook(params['pio'])).get_tree()
+        return tree
+
     @util.json_serialize
     def add_ai_item(self, params):
         ai_item = self._decoder.object_hook(params['ai'])

@@ -213,6 +213,43 @@ class AiProgram:
         self._aiprog = pio
         return pio
 
+    def get_roots(self) -> set:
+        roots = set()
+        for i, ai_item in enumerate(self._ais):
+            refs = self.get_references(i)
+            if not refs['ai']['child']:
+                roots.add(i)
+        return roots
+
+    def get_tree(self) -> []:
+        trees = []
+        for r in self.get_roots():
+            trees.append(self._generate_tree_node(r))
+        return trees
+
+    def _generate_tree_node(self, idx) -> dict:
+        itms = self.items()
+        jpen = util.get_trans_map()
+        ai: ParameterList = itms[idx]
+        try:
+            text = util._try_name(ai.object('Def').param('Name'))
+        except KeyError:
+            text = util._try_name(str(ai.object('Def').param('ClassName')))
+        tree = {
+            'text': text if not text in jpen else jpen[text],
+            'expanded': True,
+            'index': idx
+        }
+        try:
+            for child, i in ai.object('ChildIdx').params.items():
+                if 'nodes' not in tree:
+                    tree['nodes'] = []
+                if i >= 0:
+                    tree['nodes'].append(self._generate_tree_node(i))
+        except KeyError:
+            pass
+        return tree
+
 _param_type_map = {
     'String': aamp.String32,
     'Bool': bool,

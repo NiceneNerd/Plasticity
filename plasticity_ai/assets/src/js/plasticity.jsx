@@ -1,4 +1,4 @@
-import React, { Component } from "react";
+import React, { Component, Suspense } from "react";
 import ReactDOM from "react-dom";
 import AiProgram from './aiprog.jsx';
 import {TreeItem, PlasticContext} from './general.jsx';
@@ -15,7 +15,15 @@ export default class PlasticityRoot extends Component {
             selected: null,
             modified: false,
             path: '',
-            loading: false
+            loading: false,
+            tree: null
+        }
+    }
+
+    componentDidUpdate(prevProps, prevState) {
+        if (this.state.aiprog != prevState.aiprog || this.state.path || prevState.path) {
+            this.create_tree()
+                .then(tree => this.setState({tree}));
         }
     }
 
@@ -83,14 +91,16 @@ export default class PlasticityRoot extends Component {
                             modified: false,
                             path: open_ai.path,
                             selected: null,
-                            loading: false
+                            loading: false,
+                            tree: null
                         });
                         else this.setState({
                             aiprog,
                             modified: false,
                             path: open_ai.path,
                             selected: null,
-                            loading: false
+                            loading: false,
+                            tree: null
                         });
                     }
                 });
@@ -133,6 +143,14 @@ export default class PlasticityRoot extends Component {
     set_loading = () => this.setState({loading: true});
     unset_loading = () => this.setState({loading: false})
 
+    async create_tree() {
+        let tree = await this.state.aiprog.get_tree();
+        return tree.map(node => {
+            return (<TreeItem key={node.index.toString() + node.text}
+                       node={node} onPick={this.selectItem.bind(this)} />)
+        });
+    }
+
     render() {
         return (
             <React.Fragment>
@@ -156,12 +174,8 @@ export default class PlasticityRoot extends Component {
                         <nav id="treebar">
                             <strong>AI Tree</strong>
                             <ul className="tree tree-root">
-                                {this.state.aiprog &&
-                                    this.state.aiprog.get_tree(this.state.trans)
-                                        .map(node => {
-                                            return (<TreeItem key={node.index.toString() + node.text}
-                                                        node={node} onPick={this.selectItem.bind(this)} />)
-                                })}
+                                {this.state.aiprog && 
+                                    (this.state.tree || <div className="lds-ring"><div></div><div></div><div></div><div></div></div>)}
                             </ul>
                         </nav>
                         <div className="content">
