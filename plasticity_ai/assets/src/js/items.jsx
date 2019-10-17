@@ -37,26 +37,28 @@ export default class ProgramItemsView extends Component {
     }
 
     update_child(e, param) {
-        let up_ai = new AiItem(this.state.selected._plist);
+        let up_ai = this.state.selected;
         up_ai._plist.objects.ChildIdx.params[param] = { int: parseInt(e.currentTarget.value) };
         this.setState({selected: up_ai, modified: true});
     }
 
     update_sinst(param, val) {
-        let up_ai = new AiItem(this.state.selected._plist);
+        let up_ai = this.state.selected;
         up_ai._plist.objects.SInst.params[param] = val;
         this.setState({selected: up_ai, modified: true});
     }
 
     update_name(e) {
-        let up_ai = new AiItem(this.state.selected._plist);
+        let up_ai = this.state.selected;
         up_ai._plist.objects.Def.params.Name.str = e.currentTarget.value;
+        up_ai.Name = e.currentTarget.value;
         this.setState({selected: up_ai, modified: true});
     }
 
     update_group(e) {
-        let up_ai = new AiItem(this.state.selected._plist);
+        let up_ai = this.state.selected;
         up_ai._plist.objects.Def.params.GroupName.str = e.currentTarget.value;
+        up_ai.GroupName = e.currentTarget.value;
         this.setState({selected: up_ai, modified: true});
     }
 

@@ -56,21 +56,27 @@ export class ParamInput extends Component {
     render() { 
         switch(this.type) {
             case 'bool':
-                return <input type="checkbox" id={this.props.param} onChange={this.value_changed.bind(this)} checked={this.state.value || false} />
+                return <input type="checkbox" id={this.props.param} onChange={this.value_changed.bind(this)}
+                    checked={this.state.value || false} />
             case 'int':
             case 'u32':
             case 'float':
-                return <input type="number" id={this.props.param} onChange={this.value_changed.bind(this)} value={this.state.value || ''} />
+                return <input type="number" id={this.props.param} onChange={this.value_changed.bind(this)}
+                    value={!isNaN(this.state.value) ? this.state.value : ''} />
             case 'Vec3':
                 return (
                     <div className="vec3">
-                        <input type="number" data-axis="x" id={this.props.param + 'x'} onChange={this.value_changed.bind(this)} value={this.state.value[0] || ''} />
-                        <input type="number" data-axis="y" id={this.props.param + 'y'} onChange={this.value_changed.bind(this)} value={this.state.value[1] || ''} />
-                        <input type="number" data-axis="z" id={this.props.param + 'z'} onChange={this.value_changed.bind(this)} value={this.state.value[2] || ''} />
+                        <input type="number" data-axis="x" id={this.props.param + 'x'} onChange={this.value_changed.bind(this)}
+                            value={!isNaN(this.state.value[0]) ? this.state.value[0] : ''} />
+                        <input type="number" data-axis="y" id={this.props.param + 'y'} onChange={this.value_changed.bind(this)}
+                            value={!isNaN(this.state.value[1]) ? this.state.value[1] : ''} />
+                        <input type="number" data-axis="z" id={this.props.param + 'z'} onChange={this.value_changed.bind(this)}
+                            value={!isNaN(this.state.value[2]) ? this.state.value[2] : ''} />
                     </div>
                 )
             default:
-                return <input type="text" id={this.props.param} onChange={this.value_changed.bind(this)} value={this.state.value || ''} />
+                return <input type="text" id={this.props.param} onChange={this.value_changed.bind(this)}
+                    value={this.state.value || ''} />
         }
     }
 }
