@@ -61,6 +61,14 @@ select, input {
     color: #f0f0f0;
 }
 
+.btn-group-xs > .btn,
+.btn-xs {
+    padding: 0.125rem 0.25rem;
+    font-size: 0.75rem;
+    line-height: 0.5;
+    border-radius: 0.2rem;
+}
+
 .btn-popup, .btn-popup:hover {
     color: #fff;
     cursor: pointer;
@@ -115,6 +123,11 @@ select, input {
     background-color: #212121;
     padding: 0.25rem;
     display: flex;
+}
+
+.toolbar .badge {
+    align-self: center;
+    margin-right: 0.25rem;
 }
 
 .btn-icon {

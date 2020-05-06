@@ -99,13 +99,13 @@ export class AiItemsList extends Component {
 
     render() {
         return (
-            <React.Fragment>
+            <>
                 {Object.keys(this.props.items).filter(this.filter_by_args.bind(this)).map(key => {
                     return <option key={key} value={this.props.hasOwnProperty('keyMap') ? this.props.keyMap[key] : key}>
                         {(this.props.use_label) ? get_ai_label(key, this.props.items[key], this.context.trans) : key }
                     </option>;
                 })}
-            </React.Fragment>
+            </>
         )
     }
 }
