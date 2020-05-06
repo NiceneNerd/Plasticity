@@ -1,11 +1,12 @@
 from setuptools import setup
+from plasticity_ai import VERSION
 
 with open('docs/README.md', 'r') as readme:
     long_description = readme.read()
 
 setup(
     name='plasticity-ai',
-    version='0.1.7',
+    version=VERSION,
     author='NiceneNerd',
     author_email='macadamiadaze@gmail.com',
     description='An AI program editor for The Legend of Zelda: Breath of the Wild',
@@ -15,7 +16,7 @@ setup(
     include_package_data = True,
     packages = ['plasticity_ai'],
     entry_points = {
-        'console_scripts': [
+        'gui_scripts': [
             'plasticity=plasticity_ai.__main__:main'
         ]
     },

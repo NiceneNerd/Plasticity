@@ -1,2 +1,2 @@
-VERSION = 0.1
-DEBUG = True
+VERSION = "0.2.0"
+DEBUG = False

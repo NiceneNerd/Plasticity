@@ -2,6 +2,7 @@ from importlib.util import find_spec
 import json
 import os
 from pathlib import Path
+from platform import system
 import aamp
 import webview
 from . import DEBUG
@@ -86,7 +87,12 @@ def main():
     api = Api()
     api.window = webview.create_window('Plasticity', url=os.path.join(util.EXEC_DIR, 'assets', 'index.html'), js_api=api, text_select=DEBUG, width=1024)
     use_cef = find_spec('cefpython3') is not None
-    webview.start(args=api.window, gui='cef' if use_cef else 'qt', debug=DEBUG)
+    gui: str = ''
+    if system() == 'Windows' and use_cef:
+        gui = 'cef'
+    elif system() == 'Linux':
+        gui = 'qt'
+    webview.start(args=api.window, gui=gui, debug=DEBUG)
 
 if __name__ == "__main__":
     main()
