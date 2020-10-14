@@ -1,10 +1,10 @@
 import React from "react";
 import ReactDOM from "react-dom";
-import PlasticityRoot from './js/plasticity.jsx';
+import App from './js/App.jsx';
 
 $(document).ready(() => {
     ReactDOM.render(
-        <PlasticityRoot />,// <PlasticityRoot />,
+        <App />,// <PlasticityRoot />,
         document.getElementById('root')
     );
 });

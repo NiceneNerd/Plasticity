@@ -4,7 +4,7 @@
   "description": "",
   "main": "bootstrap.bundle.min.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "webpack --mode development --watch",
     "build": "webpack --mode production"
   },
   "keywords": [],

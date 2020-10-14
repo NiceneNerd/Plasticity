@@ -1,2 +1,5 @@
-VERSION = "0.2.0.post1"
-DEBUG = False
+VERSION = "0.3.0"
+
+from sys import argv
+
+DEBUG = "debug" in argv
