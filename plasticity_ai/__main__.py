@@ -4,6 +4,7 @@ import os
 from pathlib import Path
 from platform import system
 import aamp
+import oead
 import webview
 from . import DEBUG
 from . import ai, util
@@ -25,7 +26,7 @@ class Api:
         if result:
             open_path = Path(result[0])
             if open_path.exists():
-                pio = aamp.Reader(open_path.read_bytes()).parse()
+                pio = oead.aamp.ParameterIO.from_binary(open_path.read_bytes())
                 res = {
                     'path': open_path.as_posix(),
                     'pio': self._encoder.default(pio)

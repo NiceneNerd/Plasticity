@@ -1,10 +1,13 @@
-import aamp
+# import aamp
 from functools import lru_cache
 from pathlib import Path, WindowsPath, PosixPath
 import json
 from os import path
-from typing import Union
-from aamp.parameters import ParameterIO, ParameterList, ParameterObject
+from typing import Union, List
+
+# from aamp.parameters import ParameterIO, ParameterList, ParameterObject
+import oead
+from oead.aamp import ParameterIO, ParameterList, ParameterObject, Parameter, Name
 from aamp.botw_hashed_names import hash_to_name_map
 
 
@@ -115,20 +118,27 @@ class AiProgJsonEncoder(json.JSONEncoder):
             "type": pio.type,
             "version": pio.version,
             "lists": {
-                _try_name(k): self.encode_plist(pl) for k, pl in pio.lists.items()
-            },
-            "objects": {
-                _try_name(k): self.encode_pobject(pobj)
-                for k, pobj in pio.objects.items()
+                "param_root": {
+                    "lists": {
+                        _try_name(k.hash): self.encode_plist(pl)
+                        for k, pl in pio.lists.items()
+                    },
+                    "objects": {
+                        _try_name(k.hash): self.encode_pobject(pobj)
+                        for k, pobj in pio.objects.items()
+                    },
+                }
             },
         }
 
     def encode_plist(self, plist: ParameterList) -> dict:
-        lists = {_try_name(k): self.encode_plist(pl) for k, pl in plist.lists.items()}
+        lists = {
+            _try_name(k.hash): self.encode_plist(pl) for k, pl in plist.lists.items()
+        }
         return {
             "lists": lists,
             "objects": {
-                _try_name(k): self.encode_pobject(pobj)
+                _try_name(k.hash): self.encode_pobject(pobj)
                 for k, pobj in plist.objects.items()
             },
         }
@@ -136,61 +146,75 @@ class AiProgJsonEncoder(json.JSONEncoder):
     def encode_pobject(self, obj: ParameterObject) -> dict:
         return {
             "params": {
-                _try_name(k): self.encode_param(param)
+                _try_name(k.hash): self.encode_param(param)
                 for k, param in obj.params.items()
             }
         }
 
-    def encode_param(self, param) -> dict:
-        t = type(param).__name__
+    def encode_param(self, param: Parameter) -> dict:
+        t = param.type()
+        v = param.v
         encoded = None
-        if isinstance(param, aamp.Vec2):
-            encoded = self._encode_vec2(param)
-        elif isinstance(param, aamp.Vec3):
-            encoded = self._encode_vec3(param)
-        elif isinstance(param, aamp.Vec4):
-            encoded = self._encode_vec4(param)
-        elif isinstance(param, aamp.Color):
-            encoded = self._encode_color(param)
-        elif isinstance(param, aamp.Quat):
-            encoded = self._encode_quat(param)
-        elif isinstance(param, aamp.Curve):
-            encoded = self._encode_curve(param)
-        elif type(param) in [aamp.String32, aamp.String64, aamp.String256]:
-            encoded = self._encode_str(param)
+        if t == Parameter.Type.Vec2:
+            encoded = self._encode_vec2(v)
+        elif t == Parameter.Type.Vec3:
+            encoded = self._encode_vec3(v)
+        elif t == Parameter.Type.Vec4:
+            encoded = self._encode_vec4(v)
+        elif t == Parameter.Type.Color:
+            encoded = self._encode_color(v)
+        elif t == Parameter.Type.Quat:
+            encoded = self._encode_quat(v)
+        elif t in [
+            Parameter.Type.Curve1,
+            Parameter.Type.Curve2,
+            Parameter.Type.Curve3,
+            Parameter.Type.Curve4,
+        ]:
+            encoded = self._encode_curve(v)
+        elif t in [
+            Parameter.Type.String32,
+            Parameter.Type.String64,
+            Parameter.Type.String256,
+            Parameter.Type.StringRef,
+        ]:
+            encoded = self._encode_str(v)
             if encoded in get_trans_map():
                 encoded = get_trans_map()[encoded]
-        elif isinstance(param, aamp.U32):
-            encoded = self._encode_u32(param)
+        elif t == Parameter.Type.U32:
+            encoded = self._encode_u32(v)
         else:
-            encoded = param
-        return {t: encoded}
+            encoded = v
+        return {t.name: encoded}
 
-    def _encode_vec2(self, vec: aamp.Vec2) -> tuple:
+    def _encode_vec2(self, vec: oead.Vector2f) -> tuple:
         return vec.y, vec.z
 
-    def _encode_vec3(self, vec: aamp.Vec3) -> tuple:
+    def _encode_vec3(self, vec: oead.Vector3f) -> tuple:
         return vec.x, vec.y, vec.z
 
-    def _encode_vec4(self, vec: aamp.Vec4) -> tuple:
+    def _encode_vec4(self, vec: oead.Vector4f) -> tuple:
         return vec.w, vec.x, vec.y, vec.z
 
-    def _encode_color(self, color: aamp.Color) -> tuple:
+    def _encode_color(self, color: oead.Color4f) -> tuple:
         return {"a": color.a, "r": color.r, "g": color.g, "b": color.b}
 
-    def _encode_quat(self, quat: aamp.Quat) -> tuple:
+    def _encode_quat(self, quat: oead.Quatf) -> tuple:
         return quat.a, quat.b, quat.c, quat.d
 
-    def _encode_curve(self, curve: aamp.Curve) -> tuple:
-        return tuple(*curve.v)
+    def _encode_curve(self, curve: List[oead.Curve]) -> tuple:
+        return [{"a": c.a, "b": c.b, "floats": c.floats} for c in curve]
 
     def _encode_str(
-        self, string: Union[aamp.String32, aamp.String64, aamp.String256]
+        self,
+        string: Union[
+            oead.FixedSafeString32, oead.FixedSafeString64, oead.FixedSafeString256, str
+        ],
     ) -> str:
         return str(string)
 
-    def _encode_u32(self, u32: aamp.U32) -> int:
-        return int(u32)
+    def _encode_u32(self, u32: oead.U32) -> int:
+        return u32.v
 
 
 class AiProgJsonDecoder(json.JSONDecoder):
@@ -206,9 +230,6 @@ class AiProgJsonDecoder(json.JSONDecoder):
             isinstance(obj, ParameterList)
             or isinstance(obj, ParameterIO)
             or isinstance(obj, ParameterObject)
-            or isinstance(obj, str)
-            or isinstance(obj, int)
-            or isinstance(obj, aamp.String32)
         ):
             return obj
         if "version" in obj:
@@ -217,35 +238,37 @@ class AiProgJsonDecoder(json.JSONDecoder):
             return self._to_plist(obj)
         elif "params" in obj:
             return self._to_pobj(obj)
-        elif "int" in obj:
-            return int(obj["int"])
-        elif "str" in obj:
-            return str(obj["str"])
-        elif "float" in obj:
-            return float(obj["float"])
-        elif "String32" in obj:
-            return aamp.String32(obj["String32"])
-        elif "bool" in obj:
-            return obj["bool"]
-        elif "Vec3" in obj:
-            return aamp.Vec3(*obj["Vec3"])
         else:
-            return obj
+            return self._to_param(obj)
 
-    def _to_pobj(self, obj) -> aamp.ParameterObject:
+    def _to_param(self, obj) -> Parameter:
+        enc_map = {
+            "int": lambda p: oead.S32(int(p["int"])),
+            "str": lambda p: str(p["str"]),
+            "float": lambda p: oead.F32(float(p["float"])),
+            "String32": lambda p: oead.FixedSafeString32(str(p["String32"])),
+            "bool": lambda p: bool(p["bool"]),
+            "Vec3": lambda p: oead.Vector3f(*obj["Vec3"]),
+        }
+        for t, c in enc_map.items():
+            if t in obj:
+                return c[obj]
+        return obj
+
+    def _to_pobj(self, obj) -> ParameterObject:
         if isinstance(obj, ParameterObject):
             return obj
-        pobj = aamp.ParameterObject()
+        pobj = ParameterObject()
         if obj["params"]:
             for param, val in obj["params"].items():
                 if param.isnumeric():
                     pobj.params[int(param)] = self.object_hook(val)
                 else:
-                    pobj.set_param(param, self.object_hook(val))
+                    pobj.params[param] = self.object_hook(val)
         return pobj
 
-    def _to_plist(self, obj) -> aamp.ParameterList:
-        plist = aamp.ParameterList()
+    def _to_plist(self, obj) -> ParameterList:
+        plist = ParameterList()
         if isinstance(obj, ParameterList):
             return obj
         if obj["lists"]:
@@ -253,29 +276,31 @@ class AiProgJsonDecoder(json.JSONDecoder):
                 if name.isnumeric():
                     plist.lists[int(name)] = self._to_plist(content)
                 else:
-                    plist.set_list(name, self._to_plist(content))
+                    plist.lists[name] = self._to_plist(content)
         if obj["objects"]:
             for name, content in obj["objects"].items():
                 if content["params"]:
                     if name.isnumeric():
                         plist.objects[int(name)] = self._to_pobj(content)
                     else:
-                        plist.set_object(name, self._to_pobj(content))
+                        plist.objects[name] = self._to_pobj(content)
         return plist
 
-    def _to_pio(self, obj) -> aamp.ParameterIO:
-        pio = aamp.ParameterIO(obj["type"], obj["version"])
+    def _to_pio(self, obj) -> ParameterIO:
+        pio = ParameterIO()
+        pio.type = obj["type"]
+        pio.version = obj["version"]
         if obj["lists"]:
             for name, content in obj["lists"].items():
                 if name.isnumeric():
                     pio.lists[int(name)] = self._to_plist(content)
                 else:
-                    pio.set_list(name, self._to_plist(content))
+                    pio.lists[name] = self._to_plist(content)
         if obj["objects"]:
             for name, content in obj["objects"].items():
                 if content["params"]:
                     if name.isnumeric():
                         pio.objects[int(name)] = self._to_pobj(content)
                     else:
-                        pio.set_object(name, self._to_pobj(content))
+                        pio.objects[name] = self._to_pobj(content)
         return pio

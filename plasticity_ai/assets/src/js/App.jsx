@@ -92,6 +92,7 @@ export default class App extends Component {
             pywebview.api.open_file().then(open_ai => {
                 if (open_ai) {
                     if (!open_ai.path) this.setState({ loading: false });
+                    console.log(open_ai.pio);
                     const aiprog = new AiProgram(open_ai.pio);
                     if (utils)
                         this.setState({
