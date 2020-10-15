@@ -2,27 +2,29 @@
  *  STYLE 1
  */
 
- *::-webkit-scrollbar-track
- {
-     -webkit-box-shadow: inset 0 0 3px rgba(0,0,0,0.3);
-     border-radius: 10px;
-     background-color: rgba(47,49,54,0.3);
- }
- 
- *::-webkit-scrollbar
- {
-     width: 12px;
-     background-color: rgba(47,49,54,0.3);
- }
- 
- *::-webkit-scrollbar-thumb
- {
-     border-radius: 10px;
-     -webkit-box-shadow: inset 0 0 3px rgba(0,0,0,.3);
-     background-color: rgba(66,66,66,0.6);
- }
+*::-webkit-scrollbar-track {
+    -webkit-box-shadow: inset 0 0 3px rgba(0, 0, 0, 0.3);
+    border-radius: 10px;
+    background-color: rgba(47, 49, 54, 0.3);
+}
 
-html, body {
+*::-webkit-scrollbar {
+    width: 12px;
+    background-color: rgba(47, 49, 54, 0.3);
+}
+
+*::-webkit-scrollbar-corner {
+    background-color: rgba(47, 49, 54, 0.3);
+}
+
+*::-webkit-scrollbar-thumb {
+    border-radius: 10px;
+    -webkit-box-shadow: inset 0 0 3px rgba(0, 0, 0, 0.3);
+    background-color: rgba(66, 66, 66, 0.6);
+}
+
+html,
+body {
     background-color: #2f3136;
     color: white;
     width: 100%;
@@ -34,7 +36,9 @@ html, body {
     color: white;
 }
 
-html, body, #root {
+html,
+body,
+#root {
     height: 100vh;
 }
 
@@ -42,7 +46,7 @@ html, body, #root {
     flex: 1;
     position: relative;
     margin-right: 0;
-    max-height: 100%;
+    height: 100%;
 }
 
 .main-col {
@@ -51,10 +55,11 @@ html, body, #root {
 }
 
 a {
-    color: #3899D8;
+    color: #3899d8;
 }
 
-select, input {
+select,
+input {
     background-color: #212121;
     border: 1px solid #17181b;
     border-radius: 4px;
@@ -69,7 +74,8 @@ select, input {
     border-radius: 0.2rem;
 }
 
-.btn-popup, .btn-popup:hover {
+.btn-popup,
+.btn-popup:hover {
     color: #fff;
     cursor: pointer;
     padding: 0;
@@ -79,7 +85,8 @@ select, input {
     font-size: 16px;
 }
 
-.popover, .popover-body {
+.popover,
+.popover-body {
     background-color: #212121;
     color: #fff;
 }
@@ -96,10 +103,10 @@ select, input {
 
 .btn-icon {
     color: white;
-    padding: .15rem .2rem;
-    font-size: .75rem;
-    line-height: .5;
-    border-radius: .2rem;
+    padding: 0.15rem 0.2rem;
+    font-size: 0.75rem;
+    line-height: 0.5;
+    border-radius: 0.2rem;
 }
 
 .btn-icon .tool-label {
@@ -135,7 +142,7 @@ select, input {
 }
 
 #file_modded::before {
-    content: ' ';
+    content: " ";
     flex: 1;
 }
 
@@ -228,7 +235,7 @@ select, input {
 }
 
 .params {
-    width: 100%;    
+    width: 100%;
 }
 
 .params td {
@@ -236,12 +243,13 @@ select, input {
     white-space: nowrap;
 }
 
-.params select, .params input:not([type='checkbox']) {
+.params select,
+.params input:not([type="checkbox"]) {
     min-width: 3.5rem;
     width: 100%;
 }
 
-.params input:not([type='checkbox']) {
+.params input:not([type="checkbox"]) {
     padding: 1px 0.25rem;
 }
 
@@ -281,7 +289,9 @@ select {
     color: inherit;
 }
 
-.table td, .table th, .table thead th {
+.table td,
+.table th,
+.table thead th {
     border: 0;
 }
 
@@ -299,6 +309,7 @@ select {
     padding: 0.5rem 1.33rem;
     min-width: 10%;
     max-width: 21.875%;
+    height: 100%;
     width: auto;
     transition: width 0.5s;
     overflow-x: auto;
@@ -338,12 +349,12 @@ select {
 }
 
 .caret:before {
-    content: '-';
+    content: "-";
     width: 0;
 }
 
 .caret.up:before {
-    content: '+'
+    content: "+";
 }
 
 .fab {
@@ -357,7 +368,7 @@ select {
     padding: 0;
     font-size: 32px;
     font-weight: bold;
-    box-shadow: 0 8px 16px rgba(0,0,0,0.19), 0 4px 4px rgba(0,0,0,0.23);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.19), 0 4px 4px rgba(0, 0, 0, 0.23);
     transition: bottom 0.25s ease-out;
 }
 
@@ -379,8 +390,8 @@ select {
     display: block;
     width: 64px;
     height: 64px;
-  }
-  .lds-ring div {
+}
+.lds-ring div {
     box-sizing: border-box;
     display: block;
     position: absolute;
@@ -391,22 +402,21 @@ select {
     border-radius: 50%;
     animation: lds-ring 1.2s cubic-bezier(0.5, 0, 0.5, 1) infinite;
     border-color: #fff transparent transparent transparent;
-  }
-  .lds-ring div:nth-child(1) {
+}
+.lds-ring div:nth-child(1) {
     animation-delay: -0.45s;
-  }
-  .lds-ring div:nth-child(2) {
+}
+.lds-ring div:nth-child(2) {
     animation-delay: -0.3s;
-  }
-  .lds-ring div:nth-child(3) {
+}
+.lds-ring div:nth-child(3) {
     animation-delay: -0.15s;
-  }
-  @keyframes lds-ring {
+}
+@keyframes lds-ring {
     0% {
-      transform: rotate(0deg);
+        transform: rotate(0deg);
     }
     100% {
-      transform: rotate(360deg);
+        transform: rotate(360deg);
     }
-  }
-  
+}
