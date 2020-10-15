@@ -1,3 +1,4 @@
+from copy import deepcopy
 import json
 from typing import List, Union
 from zlib import crc32
@@ -10,24 +11,9 @@ from oead.aamp import (
     ParameterMap,
     ParameterObjectMap,
     ParameterListMap,
-    Parameter
+    Parameter,
 )
 from . import util
-
-
-def listcopy(plist: ParameterList) -> ParameterList:
-    def objcopy(pobj: ParameterObject) -> ParameterObject:
-        new_pobj = ParameterObject()
-        new_pobj.params = ParameterMap(
-            {k: Parameter(v.v) for k, v in pobj.params.items()}
-        )
-
-    new_plist = ParameterList()
-    new_plist.lists = ParameterListMap({k: listcopy(v) for k, v in plist.lists.items()})
-    new_plist.objects = ParameterObjectMap(
-        {k: objcopy(v) for k, v in plist.objects.items()}
-    )
-    return new_plist
 
 
 class AiProgram:
@@ -41,13 +27,13 @@ class AiProgram:
     def __init__(self, data: ParameterIO):
         self._aiprog = data
         total = 0
-        self._ais = [v for _, v in data.list["AI"].lists.items()]
+        self._ais = [v for _, v in data.lists["AI"].lists.items()]
         total += len(self._ais)
-        self._actions = [v for _, v in data.list["Action"].lists.items()]
+        self._actions = [v for _, v in data.lists["Action"].lists.items()]
         total += len(self._actions)
-        self._behaviors = [v for _, v in data.list["Behavior"].lists.items()]
+        self._behaviors = [v for _, v in data.lists["Behavior"].lists.items()]
         total += len(self._behaviors)
-        self._queries = [v for _, v in data.list["Query"].lists.items()]
+        self._queries = [v for _, v in data.lists["Query"].lists.items()]
 
     def get_references(self, idx: int) -> {}:
         idxs = {
@@ -55,24 +41,24 @@ class AiProgram:
             "ai": {"child": {}, "behavior": {}},
             "action": {"behavior": {}},
         }
-        for key, i in self._aiprog.object["DemoAIActionIdx"].params.items():
+        for key, i in self._aiprog.objects["DemoAIActionIdx"].params.items():
             if i == idx:
                 idxs["demo"].append(key)
         for i, ai in enumerate(self._ais):
-            for key, index in ai.object["ChildIdx"].params.items():
+            for key, index in ai.objects["ChildIdx"].params.items():
                 if index == idx:
                     if not i in idxs["ai"]["child"]:
                         idxs["ai"]["child"][i] = []
                     idxs["ai"]["child"][i].append(key)
             if crc32("BehaviorIdx".encode()) in ai.objects:
-                for key, index in ai.object["BehaviorIdx"].params.items():
+                for key, index in ai.objects["BehaviorIdx"].params.items():
                     if index == idx:
                         if not i in idxs["ai"]["behavior"]:
                             idxs["ai"]["behavior"][i] = []
                         idxs["ai"]["behavior"][i].append(key)
         for i, action in enumerate(self._actions):
             if crc32("BehaviorIdx".encode()) in action.objects:
-                for key, index in action.object["BehaviorIdx"].params.items():
+                for key, index in action.objects["BehaviorIdx"].params.items():
                     if index == idx:
                         if not i in idxs["action"]["behavior"]:
                             idxs["action"]["behavior"][i] = []
@@ -142,53 +128,53 @@ class AiProgram:
     def _update_indexes(self, old_idx: int, new_idx: int):
         refs = self.get_references(old_idx)
         for param in refs["demo"]:
-            self._aiprog.object["DemoAIActionIdx"].params[param] = new_idx
+            self._aiprog.objects["DemoAIActionIdx"].params[param] = new_idx
         for ai_idx, child_list in refs["ai"]["child"].items():
             for child in child_list:
-                self._ais[ai_idx].object["ChildIdx"].params[child] = new_idx
+                self._ais[ai_idx].objects["ChildIdx"].params[child] = new_idx
         for be_idx, be_list in refs["ai"]["behavior"].items():
             for be in be_list:
-                self._ais[be_idx].object["BehaviorIdx"].params[be] = (
+                self._ais[be_idx].objects["BehaviorIdx"].params[be] = (
                     new_idx - self.get_behaviors_offset()
                 )
         for be_idx, be_list in refs["action"]["behavior"].items():
             for be in be_list:
-                self._actions[be_idx].object["BehaviorIdx"].params[be] = (
+                self._actions[be_idx].objects["BehaviorIdx"].params[be] = (
                     new_idx - self.get_behaviors_offset()
                 )
 
     def add_ai(self, item: ParameterList) -> int:
-        item = listcopy(item)
+        item = deepcopy(item)
         for thing in reversed([*self._actions, *self._behaviors, *self._queries]):
             self._update_indexes(self.index(thing), self.index(thing) + 1)
         if crc32(b"ChildIdx") in item.objects:
-            for param in item.object["ChildIdx"].params:
-                item.object["ChildIdx"].params[param] = -1
+            for param in item.objects["ChildIdx"].params:
+                item.objects["ChildIdx"].params[param] = -1
         if crc32(b"BehaviorIdx") in item.objects:
-            for param in item.object["BehaviorIdx"].params:
-                item.object["BehaviorIdx"].params[param] = -1
+            for param in item.objects["BehaviorIdx"].params:
+                item.objects["BehaviorIdx"].params[param] = -1
         self._ais.append(item)
         return self.index(item)
 
     def add_action(self, item: ParameterList) -> int:
-        item = listcopy(item)
+        item = deepcopy(item)
         for thing in [*self._behaviors, *self._queries]:
             self._update_indexes(self.index(thing), self.index(thing) + 1)
         if crc32(b"BehaviorIdx") in item.objects:
-            for param in item.object["BehaviorIdx"].params:
-                item.object["BehaviorIdx"].params[param] = 0
+            for param in item.objects["BehaviorIdx"].params:
+                item.objects["BehaviorIdx"].params[param] = 0
         self._actions.append(item)
         return self.index(item)
 
     def add_behavior(self, item: ParameterList) -> int:
-        item = listcopy(item)
+        item = deepcopy(item)
         for query in self._queries:
             self._update_indexes(self.index(query), self.index(query) + 1)
         self._behaviors.append(item)
         return self.index(item)
 
     def add_query(self, item: ParameterList) -> int:
-        item = listcopy(item)
+        item = deepcopy(item)
         self._queries.append(item)
         return self.index(item)
 
@@ -216,23 +202,23 @@ class AiProgram:
         if self._ais:
             ais_list = ParameterList()
             for idx, ai in enumerate(self._ais):
-                ais_list.list[f"AI_{idx}"] = ai
-            pio.list["AI"] = ais_list
+                ais_list.lists[f"AI_{idx}"] = ai
+            pio.lists["AI"] = ais_list
         if self._actions:
             actions_list = ParameterList()
             for idx, action in enumerate(self._actions):
-                actions_list.list[f"Action_{idx}"] = action
-            pio.list["Action"] = actions_list
+                actions_list.lists[f"Action_{idx}"] = action
+            pio.lists["Action"] = actions_list
         if self._behaviors:
             behaviors_list = ParameterList()
             for idx, behavior in enumerate(self._behaviors):
-                behaviors_list.list[f"Behavior_{idx}"] = behavior
-            pio.list["Behavior"] = behaviors_list
+                behaviors_list.lists[f"Behavior_{idx}"] = behavior
+            pio.lists["Behavior"] = behaviors_list
         if self._queries:
             queries_list = ParameterList()
             for idx, query in enumerate(self._queries):
-                queries_list.list[f"Query_{idx}"] = query
-            pio.list["Query"] = queries_list
+                queries_list.lists[f"Query_{idx}"] = query
+            pio.lists["Query"] = queries_list
         self._aiprog = pio
         return pio
 
@@ -255,20 +241,20 @@ class AiProgram:
         jpen = util.get_trans_map()
         ai: ParameterList = itms[idx]
         try:
-            text = util._try_name(ai.object["Def"].param("Name"))
+            text = util._try_name(ai.objects["Def"].params["Name"].v)
         except KeyError:
-            text = util._try_name(str(ai.object["Def"].param("ClassName")))
+            text = util._try_name(str(ai.objects["Def"].params["ClassName"].v))
         tree = {
             "text": text if not text in jpen else jpen[text],
             "expanded": True,
             "index": idx,
         }
         try:
-            for child, i in ai.object["ChildIdx"].params.items():
+            for child, i in ai.objects["ChildIdx"].params.items():
                 if "nodes" not in tree:
                     tree["nodes"] = []
-                if i >= 0:
-                    tree["nodes"].append(self._generate_tree_node(i))
+                if i.v >= 0:
+                    tree["nodes"].append(self._generate_tree_node(i.v))
         except KeyError:
             pass
         return tree
@@ -302,20 +288,22 @@ class ProgramAI(ParameterList):
             ai_def = defs[key][def_name]
             self.lists = {}
             self.objects = {crc32(b"Def"): ParameterObject()}
-            self.object["Def"].set_param("ClassName", aamp.String32(def_name))
-            self.object["Def"].set_param("Name", name)
-            self.object["Def"].set_param("GroupName", group)
+            self.objects["Def"].params["ClassName"] = Parameter(
+                oead.FixedSafeString32(def_name)
+            )
+            self.objects["Def"].params["Name"] = Parameter(name)
+            self.objects["Def"].params["GroupName"] = Parameter(group)
             if "childs" in ai_def:
-                self.set_object("ChildIdx", ParameterObject())
+                self.objects["ChildIdx"] = ParameterObject()
                 for child in ai_def["childs"]:
-                    self.object["ChildIdx"].set_param(child, -1)
+                    self.objects["ChildIdx"].params[child] = Parameter(oead.S32(-1))
             if "StaticInstParams" in ai_def:
-                self.set_object("SInst", ParameterObject())
+                self.objects["SInst"] = ParameterObject()
                 for sinst in ai_def["StaticInstParams"]:
                     if "Value" in sinst:
                         val = sinst["Value"]
                     else:
                         val = _param_type_map[sinst["Type"]]()
-                    self.object["SInst"].set_param(sinst["Name"], val)
+                    self.objects["SInst"].params[sinst["Name"]] = Parameter(val)
         else:
             raise ValueError(f"{def_name} is not a valid AI")

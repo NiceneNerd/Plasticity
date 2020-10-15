@@ -207,7 +207,6 @@ export default class App extends Component {
                     </div>
                     <div className="row">
                         <nav id="treebar">
-                            <strong>AI Tree</strong>
                             <ul className="tree tree-root">
                                 {this.state.aiprog &&
                                     (this.state.tree || (

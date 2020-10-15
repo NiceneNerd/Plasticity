@@ -12,14 +12,14 @@ export class ParamInput extends Component {
     value_changed(e) {
         let new_val;
         switch (this.type) {
-            case "bool":
+            case "Bool":
                 new_val = { bool: $(`#${this.props.param}`).prop("checked") };
                 break;
-            case "int":
-            case "u32":
+            case "Int":
+            case "U32":
                 new_val = { [this.type]: parseInt($(`#${this.props.param}`).val()) };
                 break;
-            case "float":
+            case "F32":
                 new_val = { float: parseFloat($(`#${this.props.param}`).val()) };
                 break;
             case "Vec3":
@@ -37,7 +37,7 @@ export class ParamInput extends Component {
                 new_val = { Vec3: new_val };
                 break;
             case "String32":
-            case "str":
+            case "StringRef":
                 new_val = { [this.type]: $(`#${this.props.param}`).val() };
                 break;
             default:
@@ -49,7 +49,7 @@ export class ParamInput extends Component {
     render() {
         const val = this.props.value[this.type];
         switch (this.type) {
-            case "bool":
+            case "Bool":
                 return (
                     <input
                         type="checkbox"
@@ -58,9 +58,9 @@ export class ParamInput extends Component {
                         checked={val || false}
                     />
                 );
-            case "int":
-            case "u32":
-            case "float":
+            case "Int":
+            case "U32":
+            case "F32":
                 return (
                     <input
                         type="number"

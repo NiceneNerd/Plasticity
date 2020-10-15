@@ -1,16 +1,20 @@
-# import aamp
 from functools import lru_cache
 from pathlib import Path, WindowsPath, PosixPath
 import json
 from os import path
 from typing import Union, List
 
-# from aamp.parameters import ParameterIO, ParameterList, ParameterObject
 import oead
-from oead.aamp import ParameterIO, ParameterList, ParameterObject, Parameter, Name
-from aamp.botw_hashed_names import hash_to_name_map
+from oead.aamp import (
+    ParameterIO,
+    ParameterList,
+    ParameterObject,
+    Parameter,
+    Name,
+    get_default_name_table,
+)
 
-
+NAME_TABLE = get_default_name_table()
 EXEC_DIR = path.dirname(path.realpath(__file__))
 
 
@@ -68,20 +72,18 @@ def add_hashes():
         with open(
             path.join(EXEC_DIR, "resources", "hashes.json"), "r", encoding="utf-8"
         ) as h_file:
-            new_hashes = {int(k): v for k, v in json.load(h_file).items()}
-        hash_to_name_map.update(new_hashes)
+            for _, v in json.load(h_file).items():
+                NAME_TABLE.add_name(v)
         add_hashes.done = True
 
 
 @lru_cache(1024)
 def _try_name(key: int) -> Union[str, int]:
+    if isinstance(key, str):
+        return key
     add_hashes()
     tmap = get_trans_map()
-    if key in hash_to_name_map:
-        s_key = hash_to_name_map[key]
-        return s_key
-    else:
-        return _try_numbered_names(key)
+    return NAME_TABLE.get_name(int(key), 0, 0) or _try_numbered_names(key)
 
 
 @lru_cache(1024)
@@ -243,23 +245,23 @@ class AiProgJsonDecoder(json.JSONDecoder):
 
     def _to_param(self, obj) -> Parameter:
         enc_map = {
-            "int": lambda p: oead.S32(int(p["int"])),
-            "str": lambda p: str(p["str"]),
-            "float": lambda p: oead.F32(float(p["float"])),
+            "Int": lambda p: oead.S32(int(p["Int"])),
+            "StringRef": lambda p: str(p["StringRef"]),
+            "F32": lambda p: oead.F32(float(p["F32"])),
             "String32": lambda p: oead.FixedSafeString32(str(p["String32"])),
-            "bool": lambda p: bool(p["bool"]),
+            "Bool": lambda p: bool(p["Bool"]),
             "Vec3": lambda p: oead.Vector3f(*obj["Vec3"]),
         }
         for t, c in enc_map.items():
             if t in obj:
-                return c[obj]
+                return c(obj)
         return obj
 
     def _to_pobj(self, obj) -> ParameterObject:
         if isinstance(obj, ParameterObject):
             return obj
         pobj = ParameterObject()
-        if obj["params"]:
+        if "params" in obj and obj["params"]:
             for param, val in obj["params"].items():
                 if param.isnumeric():
                     pobj.params[int(param)] = self.object_hook(val)
@@ -271,13 +273,13 @@ class AiProgJsonDecoder(json.JSONDecoder):
         plist = ParameterList()
         if isinstance(obj, ParameterList):
             return obj
-        if obj["lists"]:
+        if "lists" in obj and obj["lists"]:
             for name, content in obj["lists"].items():
                 if name.isnumeric():
                     plist.lists[int(name)] = self._to_plist(content)
                 else:
                     plist.lists[name] = self._to_plist(content)
-        if obj["objects"]:
+        if "objects" in obj and obj["objects"]:
             for name, content in obj["objects"].items():
                 if content["params"]:
                     if name.isnumeric():
@@ -290,15 +292,16 @@ class AiProgJsonDecoder(json.JSONDecoder):
         pio = ParameterIO()
         pio.type = obj["type"]
         pio.version = obj["version"]
-        if obj["lists"]:
+        obj = obj["lists"]["param_root"]
+        if "lists" in obj and obj["lists"]:
             for name, content in obj["lists"].items():
                 if name.isnumeric():
                     pio.lists[int(name)] = self._to_plist(content)
                 else:
                     pio.lists[name] = self._to_plist(content)
-        if obj["objects"]:
+        if "objects" in obj and obj["objects"]:
             for name, content in obj["objects"].items():
-                if content["params"]:
+                if "params" in content and content["params"]:
                     if name.isnumeric():
                         pio.objects[int(name)] = self._to_pobj(content)
                     else:

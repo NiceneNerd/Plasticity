@@ -205,11 +205,11 @@ export class AiItem {
         this._plist = JSON.parse(JSON.stringify(plist));
         this.ClassName =
             this._plist.objects.Def.params.ClassName.String32 ||
-            this._plist.objects.Def.params.ClassName.str;
+            this._plist.objects.Def.params.ClassName.StringRef;
         if (this._plist.objects.Def.params.Name)
-            this.Name = this._plist.objects.Def.params.Name.str;
+            this.Name = this._plist.objects.Def.params.Name.StringRef;
         if (this._plist.objects.Def.params.GroupName)
-            this.GroupName = this._plist.objects.Def.params.GroupName.str;
+            this.GroupName = this._plist.objects.Def.params.GroupName.StringRef;
     }
 
     get SInst() {
@@ -241,7 +241,7 @@ export function get_ai_label(idx, ai, trans) {
     if (ai.Name == undefined && ai.ClassName == undefined) ai = new AiItem(ai);
     return (
         `${idx}: ` +
-        (ai.Name && (trans ? try_trans(ai.Name, trans) : ai.Name) + ` — `) +
+        (ai.Name ? (trans ? try_trans(ai.Name, trans) : ai.Name) + ` — ` : "") +
         `${ai.ClassName}`
     ); /* `${idx.replace(/[A-Za-z]+_/, '')}. ` + */
 }

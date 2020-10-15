@@ -56,14 +56,14 @@ export default class ProgramItemsView extends Component {
 
     update_name(e) {
         let up_ai = this.state.selected;
-        up_ai._plist.objects.Def.params.Name.str = e.currentTarget.value;
+        up_ai._plist.objects.Def.params.Name.StringRef = e.currentTarget.value;
         up_ai.Name = e.currentTarget.value;
         this.setState({ selected: up_ai, modified: true });
     }
 
     update_group(e) {
         let up_ai = this.state.selected;
-        up_ai._plist.objects.Def.params.GroupName.str = e.currentTarget.value;
+        up_ai._plist.objects.Def.params.GroupName.StringRef = e.currentTarget.value;
         up_ai.GroupName = e.currentTarget.value;
         this.setState({ selected: up_ai, modified: true });
     }
@@ -181,7 +181,8 @@ export default class ProgramItemsView extends Component {
                                                     id={`${this.props.type}_name`}
                                                     value={
                                                         this.state.selected
-                                                            ? this.state.selected.Name
+                                                            ? this.state.selected
+                                                                  .Name || ""
                                                             : ""
                                                     }
                                                     onChange={e => this.update_name(e)}
@@ -274,14 +275,22 @@ export default class ProgramItemsView extends Component {
                                             ).map(param => {
                                                 return (
                                                     <tr key={param}>
-                                                        <td
-                                                            dangerouslySetInnerHTML={{
-                                                                __html: try_trans(
+                                                        <td>
+                                                            <div
+                                                                className="param-label"
+                                                                title={try_trans(
                                                                     param,
                                                                     this.context.trans
-                                                                ),
-                                                            }}
-                                                        />
+                                                                )}
+                                                                dangerouslySetInnerHTML={{
+                                                                    __html: try_trans(
+                                                                        param,
+                                                                        this.context
+                                                                            .trans
+                                                                    ),
+                                                                }}
+                                                            />
+                                                        </td>
                                                         <td>
                                                             <OverlayTrigger
                                                                 trigger="focus"
@@ -333,7 +342,7 @@ export default class ProgramItemsView extends Component {
                                                                             .selected
                                                                             .ChildIdx[
                                                                             param
-                                                                        ].int
+                                                                        ].Int
                                                                     ]
                                                                 }>
                                                                 <AiItemsList
@@ -426,7 +435,7 @@ export default class ProgramItemsView extends Component {
                                 <div className="main-col">
                                     {this.state.selected && this.state.selected.SInst && (
                                         <div
-                                            class="info-box"
+                                            className="info-box"
                                             id={`${this.props.type}_sinst`}>
                                             <h2>Parameters</h2>
                                             <table
