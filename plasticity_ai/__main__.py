@@ -23,12 +23,21 @@ class Api:
     def open_file(self):
         result = self.window.create_file_dialog(
             webview.OPEN_DIALOG,
-            file_types=("AI Programs (*.baiprog)", "All Files (*.*)"),
+            file_types=(
+                "Binary AI Program (*.baiprog)",
+                "YAML AI Program (*.yml)",
+                "All Files (*.*)",
+            ),
         )
         if result:
             open_path = Path(result[0])
             if open_path.exists():
-                pio = oead.aamp.ParameterIO.from_binary(open_path.read_bytes())
+                if open_path.suffix == ".baiprog":
+                    pio = oead.aamp.ParameterIO.from_binary(open_path.read_bytes())
+                elif open_path.suffix == ".yml":
+                    pio = oead.aamp.ParameterIO.from_text(open_path.read_text("utf8"))
+                else:
+                    return
                 res = {"path": open_path.as_posix(), "pio": self._encoder.default(pio)}
                 return res
         else:
@@ -40,7 +49,11 @@ class Api:
         else:
             result = self.window.create_file_dialog(
                 webview.SAVE_DIALOG,
-                file_types=("AI Programs (*.baiprog)", "All Files (*.*)"),
+                file_types=(
+                    "Binary AI Program (*.baiprog)",
+                    "YAML AI Program (*.yml)",
+                    "All Files (*.*)",
+                ),
             )
             if result:
                 open_path = Path(result)
@@ -48,7 +61,10 @@ class Api:
                 return {"success": False}
         try:
             pio = self._decoder.object_hook(params["pio"])
-            open_path.write_bytes(pio.to_binary())
+            if open_path.suffix == ".yml":
+                open_path.write_text(pio.to_text(), encoding="utf-8")
+            else:
+                open_path.write_bytes(pio.to_binary())
             return {"success": True}
         except Exception as e:
             return {"success": False, "error": str(e)}
