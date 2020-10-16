@@ -195,8 +195,11 @@ export default class App extends Component {
                         </ButtonToolbar>
                         <div className="flex-grow-1"></div>
                         {this.state.path && (
-                            <Badge variant="secondary" className="align-text-bottom">
-                                {this.state.path}
+                            <Badge
+                                variant="secondary"
+                                className="align-text-bottom"
+                                title={this.state.path}>
+                                {this.state.path.split("/").slice(-1)[0]}
                             </Badge>
                         )}
                         {this.state.modified && (

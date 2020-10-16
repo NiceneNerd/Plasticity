@@ -135,6 +135,7 @@ input {
 .toolbar .badge {
     align-self: center;
     margin-right: 0.25rem;
+    z-index: 10;
 }
 
 .btn-icon {
