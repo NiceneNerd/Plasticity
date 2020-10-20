@@ -56,7 +56,7 @@ class Api:
                 ),
             )
             if result:
-                open_path = Path(result)
+                open_path = Path(result if isinstance(result, str) else result[0])
             else:
                 return {"success": False}
         try:
