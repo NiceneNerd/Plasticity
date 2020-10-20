@@ -181,8 +181,6 @@ class AiProgJsonEncoder(json.JSONEncoder):
             Parameter.Type.StringRef,
         ]:
             encoded = self._encode_str(v)
-            if encoded in get_trans_map():
-                encoded = get_trans_map()[encoded]
         elif t == Parameter.Type.U32:
             encoded = self._encode_u32(v)
         else:
@@ -245,14 +243,14 @@ class AiProgJsonDecoder(json.JSONDecoder):
 
     def _to_param(self, obj) -> Parameter:
         enc_map = {
-            "Int": lambda p: oead.S32(int(p["Int"])),
+            "Int": lambda p: int(p["Int"]),
             "StringRef": lambda p: str(p["StringRef"]),
-            "F32": lambda p: oead.F32(float(p["F32"])),
+            "F32": lambda p: float(p["F32"]),
             "String32": lambda p: oead.FixedSafeString32(str(p["String32"])),
             "Bool": lambda p: bool(p["Bool"]),
             "Vec3": lambda p: oead.Vector3f(*obj["Vec3"]),
         }
-        return enc_map.get(next(iter(obj)), lambda x: x)(obj)
+        return Parameter(enc_map.get(next(iter(obj)), lambda x: x)(obj))
 
     def _to_pobj(self, obj) -> ParameterObject:
         if isinstance(obj, ParameterObject):

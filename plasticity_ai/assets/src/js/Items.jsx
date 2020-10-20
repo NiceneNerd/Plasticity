@@ -43,7 +43,7 @@ export default class ProgramItemsView extends Component {
     update_child(e, param) {
         let up_ai = this.state.selected;
         up_ai._plist.objects.ChildIdx.params[param] = {
-            int: parseInt(e.currentTarget.value),
+            Int: parseInt(e.currentTarget.value),
         };
         this.setState({ selected: up_ai, modified: true });
     }
@@ -71,7 +71,7 @@ export default class ProgramItemsView extends Component {
     update_behavior(e, param) {
         let up_ai = new AiItem(this.state.selected._plist);
         up_ai._plist.objects.BehaviorIdx.params[param] = {
-            int: parseInt(e.currentTarget.value.replace("Behavior_", "")),
+            Int: parseInt(e.currentTarget.value.replace("Behavior_", "")),
         };
         this.setState({ selected: up_ai, modified: true });
     }
@@ -409,7 +409,7 @@ export default class ProgramItemsView extends Component {
                                                                             .selected
                                                                             .BehaviorIdx[
                                                                             param
-                                                                        ].int
+                                                                        ].Int
                                                                     ]
                                                                 }>
                                                                 <AiItemsList
