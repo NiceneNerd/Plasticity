@@ -252,10 +252,7 @@ class AiProgJsonDecoder(json.JSONDecoder):
             "Bool": lambda p: bool(p["Bool"]),
             "Vec3": lambda p: oead.Vector3f(*obj["Vec3"]),
         }
-        for t, c in enc_map.items():
-            if t in obj:
-                return c(obj)
-        return obj
+        return enc_map.get(next(iter(obj)), lambda x: x)(obj)
 
     def _to_pobj(self, obj) -> ParameterObject:
         if isinstance(obj, ParameterObject):
