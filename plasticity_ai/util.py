@@ -241,6 +241,13 @@ class AiProgJsonDecoder(json.JSONDecoder):
         else:
             return self._to_param(obj)
 
+    def _construct_vec3(self, p) -> oead.Vector3f:
+        v = oead.Vector3f()
+        v.x = p[0]
+        v.y = p[1]
+        v.z = p[2]
+        return v
+
     def _to_param(self, obj) -> Parameter:
         enc_map = {
             "Int": lambda p: int(p["Int"]),
@@ -248,7 +255,7 @@ class AiProgJsonDecoder(json.JSONDecoder):
             "F32": lambda p: float(p["F32"]),
             "String32": lambda p: oead.FixedSafeString32(str(p["String32"])),
             "Bool": lambda p: bool(p["Bool"]),
-            "Vec3": lambda p: oead.Vector3f(*obj["Vec3"]),
+            "Vec3": lambda p: self._construct_vec3(p["Vec3"]),
         }
         return Parameter(enc_map.get(next(iter(obj)), lambda x: x)(obj))
 
