@@ -28,7 +28,7 @@ body {
     background-color: #2f3136;
     color: white;
     width: 100%;
-    overflow-x: hidden;
+    overflow: hidden;
 }
 
 .modal-content {
@@ -201,7 +201,7 @@ input {
 }
 
 .tab-pane > .row {
-    height: 100%;
+    height: calc(100% - 2rem);
     overflow: hidden;
     padding: 0 1rem;
     flex-wrap: nowrap;
