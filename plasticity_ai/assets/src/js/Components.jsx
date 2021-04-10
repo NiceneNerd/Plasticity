@@ -14,7 +14,7 @@ export class ParamInput extends Component {
         let new_val;
         switch (this.type) {
             case "Bool":
-                new_val = { bool: $(`#${this.props.param}`).prop("checked") };
+                new_val = { Bool: $(`#${this.props.param}`).prop("checked") };
                 break;
             case "Int":
             case "U32":

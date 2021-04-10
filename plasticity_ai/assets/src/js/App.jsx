@@ -125,10 +125,13 @@ export default class App extends Component {
             pio: this.state.aiprog.clone_pio(),
             path
         });
-        if (response.error)
-            alert(
-                `The following error occured when saving this file: ${response.error}`
-            );
+        if (response.error) {
+            if (response.error != "cancel")
+                alert(
+                    `The following error occured when saving this file: ${response.error}`
+                );
+            this.setState({ loading: false });
+        }
         else this.setState({ modified: false, path, loading: false });
     }
 

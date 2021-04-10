@@ -255,6 +255,7 @@ class AiProgJsonDecoder(json.JSONDecoder):
             "F32": lambda p: float(p["F32"]),
             "String32": lambda p: oead.FixedSafeString32(str(p["String32"])),
             "Bool": lambda p: bool(p["Bool"]),
+            "bool": lambda p: bool(p["Bool"]),
             "Vec3": lambda p: self._construct_vec3(p["Vec3"]),
         }
         return Parameter(enc_map.get(next(iter(obj)), lambda x: x)(obj))

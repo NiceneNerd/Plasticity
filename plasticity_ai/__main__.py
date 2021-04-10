@@ -58,7 +58,7 @@ class Api:
             if result:
                 open_path = Path(result if isinstance(result, str) else result[0])
             else:
-                return {"success": False}
+                return {"success": False, "error": "cancel"}
         try:
             pio = self._decoder.object_hook(params["pio"])
             if open_path.suffix == ".yml":
