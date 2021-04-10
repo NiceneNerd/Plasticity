@@ -1,6 +1,10 @@
 import React, { Component } from "react";
-import { OverlayTrigger, Popover } from "react-bootstrap";
-import PlasticContext, { AiItemsList, ParamInput, NewAiModal } from "./Components.jsx";
+import { Button, OverlayTrigger, Popover } from "react-bootstrap";
+import PlasticContext, {
+    AiItemsList,
+    ParamInput,
+    NewAiModal
+} from "./Components.jsx";
 import { AiItem, try_trans, get_ai_label } from "./AIProg.jsx";
 
 export default class ProgramItemsView extends Component {
@@ -11,6 +15,7 @@ export default class ProgramItemsView extends Component {
         this.state = {
             selected: null,
             modified: false,
+            showNew: false
         };
     }
 
@@ -27,64 +32,66 @@ export default class ProgramItemsView extends Component {
         ));
     };
 
-    async add_new_ai(def) {
+    add_new_ai = async def => {
         this.props.setLoading();
         const new_ai = await pywebview.api.create_prog_item({
+            ai: this.context.aiprog,
             type: this.props.type,
-            def,
+            def: def
         });
         this.props.onAdd(this.props.type, new_ai);
-    }
+    };
 
-    async remove_ai() {
+    remove_ai = async () => {
         this.props.onRemove($(`#${this.props.type}_list`).val());
-    }
+    };
 
-    update_child(e, param) {
+    update_child = (e, param) => {
         let up_ai = this.state.selected;
         up_ai._plist.objects.ChildIdx.params[param] = {
-            Int: parseInt(e.currentTarget.value),
+            Int: parseInt(e.currentTarget.value)
         };
         this.setState({ selected: up_ai, modified: true });
-    }
+    };
 
-    update_sinst(param, val) {
+    update_sinst = (param, val) => {
         let up_ai = this.state.selected;
         up_ai._plist.objects.SInst.params[param] = val;
         this.setState({ selected: up_ai, modified: true });
-    }
+    };
 
-    update_name(e) {
+    update_name = e => {
         let up_ai = this.state.selected;
         up_ai._plist.objects.Def.params.Name.StringRef = e.currentTarget.value;
         up_ai.Name = e.currentTarget.value;
         this.setState({ selected: up_ai, modified: true });
-    }
+    };
 
-    update_group(e) {
+    update_group = e => {
         let up_ai = this.state.selected;
-        up_ai._plist.objects.Def.params.GroupName.StringRef = e.currentTarget.value;
+        up_ai._plist.objects.Def.params.GroupName.StringRef =
+            e.currentTarget.value;
         up_ai.GroupName = e.currentTarget.value;
         this.setState({ selected: up_ai, modified: true });
-    }
+    };
 
-    update_behavior(e, param) {
+    update_behavior = (e, param) => {
         let up_ai = new AiItem(this.state.selected._plist);
         up_ai._plist.objects.BehaviorIdx.params[param] = {
-            Int: parseInt(e.currentTarget.value.replace("Behavior_", "")),
+            Int: parseInt(e.currentTarget.value.replace("Behavior_", ""))
         };
         this.setState({ selected: up_ai, modified: true });
-    }
+    };
 
-    push_update() {
+    push_update = () => {
         this.props.onUpdate(
             $(`#${this.props.type}_list`).val(),
             this.state.selected._plist
         );
         this.setState({ modified: false });
-    }
+    };
 
-    child_title(param) {
+    child_title = param => {
         return (
             `${param} ` +
             (param != try_trans(param, this.context.trans)
@@ -94,11 +101,14 @@ export default class ProgramItemsView extends Component {
                   )})</span>`
                 : "")
         );
-    }
+    };
 
-    child_info(param) {
-        return this.props.classes[this.state.selected.ClassName].childs[param] &&
-            this.props.classes[this.state.selected.ClassName].childs[param].length > 0
+    child_info = param => {
+        return this.props.classes[this.state.selected.ClassName].childs[
+            param
+        ] &&
+            this.props.classes[this.state.selected.ClassName].childs[param]
+                .length > 0
             ? `<table><thead><tr><th>Name</th><th>Type</th></tr></thead><tbody>${this.props.classes[
                   this.state.selected.ClassName
               ].childs[param]
@@ -108,7 +118,7 @@ export default class ProgramItemsView extends Component {
                   )
                   .join("")}</tbody></table>`
             : "No arguments";
-    }
+    };
 
     get key_map() {
         let k_map = {};
@@ -122,14 +132,15 @@ export default class ProgramItemsView extends Component {
     render() {
         return (
             <div className="row">
-                <button
+                <Button
+                    variant="primary"
                     className={
                         (!this.state.modified ? "fab-away " : "") +
-                        "btn btn-lg btn-primary fab "
+                        "btn-lg fab "
                     }
                     onClick={this.push_update.bind(this)}>
                     <i className="material-icons">done</i>
-                </button>
+                </Button>
                 <div className="prog_list">
                     <h2>AI List</h2>
                     <select
@@ -145,20 +156,22 @@ export default class ProgramItemsView extends Component {
                         )}
                     </select>
                     <div className="list_buttons">
-                        <button
-                            className="btn btn-sm btn-primary"
-                            onClick={() =>
-                                $(`#new_${this.props.type}_modal`).modal("show")
-                            }>
+                        <Button
+                            variant="primary"
+                            size="xs"
+                            onClick={() => this.setState({ showNew: true })}>
                             +
-                        </button>
-                        <button
-                            className="btn btn-sm btn-primary"
+                        </Button>
+                        <Button
+                            variant="primary"
+                            size="xs"
                             onClick={() =>
-                                confirm("Delete this item?") ? this.remove_ai() : null
+                                confirm("Delete this item?")
+                                    ? this.remove_ai()
+                                    : null
                             }>
                             ‒
-                        </button>
+                        </Button>
                     </div>
                 </div>
                 <div className="info">
@@ -166,7 +179,9 @@ export default class ProgramItemsView extends Component {
                         <div className="main-col">
                             <div className="info-box">
                                 <h2>Definition</h2>
-                                <table id={`${this.props.type}_def`} className="params">
+                                <table
+                                    id={`${this.props.type}_def`}
+                                    className="params">
                                     <tbody>
                                         <tr>
                                             <td>
@@ -181,11 +196,14 @@ export default class ProgramItemsView extends Component {
                                                     id={`${this.props.type}_name`}
                                                     value={
                                                         this.state.selected
-                                                            ? this.state.selected
+                                                            ? this.state
+                                                                  .selected
                                                                   .Name || ""
                                                             : ""
                                                     }
-                                                    onChange={e => this.update_name(e)}
+                                                    onChange={e =>
+                                                        this.update_name(e)
+                                                    }
                                                 />
                                             </td>
                                         </tr>
@@ -202,7 +220,8 @@ export default class ProgramItemsView extends Component {
                                                     readOnly={true}
                                                     value={
                                                         this.state.selected
-                                                            ? this.state.selected
+                                                            ? this.state
+                                                                  .selected
                                                                   .ClassName
                                                             : ""
                                                     }>
@@ -225,7 +244,8 @@ export default class ProgramItemsView extends Component {
                                                     id={`${this.props.type}_group`}
                                                     value={
                                                         this.state.selected
-                                                            ? this.state.selected
+                                                            ? this.state
+                                                                  .selected
                                                                   .GroupName
                                                             : ""
                                                     }
@@ -243,10 +263,13 @@ export default class ProgramItemsView extends Component {
                                                                             ? item.GroupName
                                                                             : "")
                                                                     }
-                                                                    value={item.Name}>
+                                                                    value={
+                                                                        item.Name
+                                                                    }>
                                                                     {try_trans(
                                                                         item.Name,
-                                                                        this.context
+                                                                        this
+                                                                            .context
                                                                             .trans
                                                                     )}
                                                                 </option>
@@ -261,229 +284,259 @@ export default class ProgramItemsView extends Component {
                                     </tbody>
                                 </table>
                             </div>
-                            {this.state.selected && this.state.selected.ChildIdx && (
-                                <div
-                                    className="info-box"
-                                    id={`${this.props.type}_children`}>
-                                    <h2>Children</h2>
-                                    <table
-                                        className="params"
-                                        id={`${this.props.type}_childidx`}>
-                                        <tbody>
-                                            {Object.keys(
-                                                this.state.selected.ChildIdx
-                                            ).map(param => {
-                                                return (
-                                                    <tr key={param}>
-                                                        <td>
-                                                            <div
-                                                                className="param-label"
-                                                                title={try_trans(
-                                                                    param,
-                                                                    this.context.trans
-                                                                )}
-                                                                dangerouslySetInnerHTML={{
-                                                                    __html: try_trans(
+                            {this.state.selected &&
+                                this.state.selected.ChildIdx && (
+                                    <div
+                                        className="info-box"
+                                        id={`${this.props.type}_children`}>
+                                        <h2>Children</h2>
+                                        <table
+                                            className="params"
+                                            id={`${this.props.type}_childidx`}>
+                                            <tbody>
+                                                {Object.keys(
+                                                    this.state.selected.ChildIdx
+                                                ).map(param => {
+                                                    return (
+                                                        <tr key={param}>
+                                                            <td>
+                                                                <div
+                                                                    className="param-label"
+                                                                    title={try_trans(
                                                                         param,
-                                                                        this.context
+                                                                        this
+                                                                            .context
                                                                             .trans
-                                                                    ),
-                                                                }}
-                                                            />
-                                                        </td>
-                                                        <td>
-                                                            <OverlayTrigger
-                                                                trigger="focus"
-                                                                placement="right"
-                                                                overlay={
-                                                                    <Popover>
-                                                                        <Popover.Title
-                                                                            dangerouslySetInnerHTML={{
-                                                                                __html: this.child_title(
-                                                                                    param
-                                                                                ),
-                                                                            }}
-                                                                        />
-                                                                        <Popover.Content
-                                                                            dangerouslySetInnerHTML={{
-                                                                                __html: this.child_info(
-                                                                                    param
-                                                                                ),
-                                                                            }}
-                                                                        />
-                                                                    </Popover>
-                                                                }>
-                                                                <a
-                                                                    tabIndex="0"
-                                                                    className="btn btn-popup">
-                                                                    <i className="material-icons">
-                                                                        info
-                                                                    </i>
-                                                                </a>
-                                                            </OverlayTrigger>
-                                                        </td>
-                                                        <td>
-                                                            <select
-                                                                id={`${this.props.type}_child_${param}`}
-                                                                data-param={param}
-                                                                onChange={e =>
-                                                                    this.update_child(
-                                                                        e,
+                                                                    )}
+                                                                    dangerouslySetInnerHTML={{
+                                                                        __html: try_trans(
+                                                                            param,
+                                                                            this
+                                                                                .context
+                                                                                .trans
+                                                                        )
+                                                                    }}
+                                                                />
+                                                            </td>
+                                                            <td>
+                                                                <OverlayTrigger
+                                                                    trigger="focus"
+                                                                    placement="right"
+                                                                    overlay={
+                                                                        <Popover>
+                                                                            <Popover.Title
+                                                                                dangerouslySetInnerHTML={{
+                                                                                    __html: this.child_title(
+                                                                                        param
+                                                                                    )
+                                                                                }}
+                                                                            />
+                                                                            <Popover.Content
+                                                                                dangerouslySetInnerHTML={{
+                                                                                    __html: this.child_info(
+                                                                                        param
+                                                                                    )
+                                                                                }}
+                                                                            />
+                                                                        </Popover>
+                                                                    }>
+                                                                    <a
+                                                                        tabIndex="0"
+                                                                        className="btn btn-popup">
+                                                                        <i className="material-icons">
+                                                                            info
+                                                                        </i>
+                                                                    </a>
+                                                                </OverlayTrigger>
+                                                            </td>
+                                                            <td>
+                                                                <select
+                                                                    id={`${this.props.type}_child_${param}`}
+                                                                    data-param={
                                                                         param
-                                                                    )
-                                                                }
-                                                                value={
-                                                                    Object.keys(
-                                                                        this.context
-                                                                            .aiprog
-                                                                            .items
-                                                                    )[
-                                                                        this.state
-                                                                            .selected
-                                                                            .ChildIdx[
-                                                                            param
-                                                                        ].Int
-                                                                    ]
-                                                                }>
-                                                                <AiItemsList
-                                                                    keyMap={
-                                                                        this.key_map
                                                                     }
-                                                                    args={
-                                                                        this.props
-                                                                            .classes[
-                                                                            this.state
+                                                                    onChange={e =>
+                                                                        this.update_child(
+                                                                            e,
+                                                                            param
+                                                                        )
+                                                                    }
+                                                                    value={
+                                                                        Object.keys(
+                                                                            this
+                                                                                .context
+                                                                                .aiprog
+                                                                                .items
+                                                                        )[
+                                                                            this
+                                                                                .state
                                                                                 .selected
-                                                                                .ClassName
-                                                                        ].childs[
+                                                                                .ChildIdx[
+                                                                                param
+                                                                            ]
+                                                                                .Int
+                                                                        ]
+                                                                    }>
+                                                                    <AiItemsList
+                                                                        keyMap={
+                                                                            this
+                                                                                .key_map
+                                                                        }
+                                                                        args={
+                                                                            this
+                                                                                .props
+                                                                                .classes[
+                                                                                this
+                                                                                    .state
+                                                                                    .selected
+                                                                                    .ClassName
+                                                                            ]
+                                                                                .childs[
+                                                                                param
+                                                                            ] ||
+                                                                            []
+                                                                        }
+                                                                        items={
+                                                                            this
+                                                                                .context
+                                                                                .aiprog
+                                                                                .labeled_items
+                                                                        }
+                                                                        use_label={
+                                                                            true
+                                                                        }
+                                                                    />
+                                                                </select>
+                                                            </td>
+                                                        </tr>
+                                                    );
+                                                })}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                )}
+                            {this.state.selected &&
+                                this.state.selected.BehaviorIdx && (
+                                    <div
+                                        className="info-box"
+                                        id={`${this.props.type}_behaviors`}>
+                                        <h2>Behaviors</h2>
+                                        <table
+                                            className="params"
+                                            id={`${this.props.type}_bidx`}>
+                                            <tbody>
+                                                {Object.keys(
+                                                    this.state.selected
+                                                        .BehaviorIdx
+                                                ).map(param => {
+                                                    return (
+                                                        <tr key={param}>
+                                                            <td>{param}</td>
+                                                            <td>
+                                                                <select
+                                                                    id={`${this.props.type}_behave_${param}`}
+                                                                    onChange={e =>
+                                                                        this.update_behavior(
+                                                                            e,
                                                                             param
-                                                                        ] || []
+                                                                        )
                                                                     }
-                                                                    items={
-                                                                        this.context
-                                                                            .aiprog
-                                                                            .labeled_items
-                                                                    }
-                                                                    use_label={true}
-                                                                />
-                                                            </select>
-                                                        </td>
-                                                    </tr>
-                                                );
-                                            })}
-                                        </tbody>
-                                    </table>
-                                </div>
-                            )}
-                            {this.state.selected && this.state.selected.BehaviorIdx && (
-                                <div
-                                    className="info-box"
-                                    id={`${this.props.type}_behaviors`}>
-                                    <h2>Behaviors</h2>
-                                    <table
-                                        className="params"
-                                        id={`${this.props.type}_bidx`}>
-                                        <tbody>
-                                            {Object.keys(
-                                                this.state.selected.BehaviorIdx
-                                            ).map(param => {
-                                                return (
-                                                    <tr key={param}>
-                                                        <td>{param}</td>
-                                                        <td>
-                                                            <select
-                                                                id={`${this.props.type}_behave_${param}`}
-                                                                onChange={e =>
-                                                                    this.update_behavior(
-                                                                        e,
-                                                                        param
-                                                                    )
-                                                                }
-                                                                value={
-                                                                    Object.keys(
-                                                                        this.context
-                                                                            .aiprog
-                                                                            .behaviors
-                                                                    )[
-                                                                        this.state
-                                                                            .selected
-                                                                            .BehaviorIdx[
-                                                                            param
-                                                                        ].Int
-                                                                    ]
-                                                                }>
-                                                                <AiItemsList
-                                                                    items={
-                                                                        this.context
-                                                                            .aiprog
-                                                                            .behaviors
-                                                                    }
-                                                                />
-                                                            </select>
-                                                        </td>
-                                                    </tr>
-                                                );
-                                            })}
-                                        </tbody>
-                                    </table>
-                                </div>
-                            )}
+                                                                    value={
+                                                                        Object.keys(
+                                                                            this
+                                                                                .context
+                                                                                .aiprog
+                                                                                .behaviors
+                                                                        )[
+                                                                            this
+                                                                                .state
+                                                                                .selected
+                                                                                .BehaviorIdx[
+                                                                                param
+                                                                            ]
+                                                                                .Int
+                                                                        ]
+                                                                    }>
+                                                                    <AiItemsList
+                                                                        items={
+                                                                            this
+                                                                                .context
+                                                                                .aiprog
+                                                                                .behaviors
+                                                                        }
+                                                                    />
+                                                                </select>
+                                                            </td>
+                                                        </tr>
+                                                    );
+                                                })}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                )}
                         </div>
                         {this.state.selected &&
                             (this.state.selected.SInst ||
                                 this.state.selected.BehaviorIdx) && (
                                 <div className="main-col">
-                                    {this.state.selected && this.state.selected.SInst && (
-                                        <div
-                                            className="info-box"
-                                            id={`${this.props.type}_sinst`}>
-                                            <h2>Parameters</h2>
-                                            <table
-                                                className="params"
-                                                id={`${this.props.type}_sparams`}>
-                                                <tbody>
-                                                    {Object.keys(
-                                                        this.state.selected.SInst
-                                                    ).map(param => {
-                                                        return (
-                                                            <tr
-                                                                key={
-                                                                    param +
-                                                                    this.state.selected.SInst[
-                                                                        param
-                                                                    ].toString()
-                                                                }>
-                                                                <td
-                                                                    dangerouslySetInnerHTML={{
-                                                                        __html: param,
-                                                                    }}
-                                                                />
-                                                                <td>
-                                                                    <ParamInput
-                                                                        param={param}
-                                                                        value={
-                                                                            this.state
-                                                                                .selected
-                                                                                .SInst[
-                                                                                param
-                                                                            ]
-                                                                        }
-                                                                        onChange={this.update_sinst.bind(
-                                                                            this
-                                                                        )}
+                                    {this.state.selected &&
+                                        this.state.selected.SInst && (
+                                            <div
+                                                className="info-box"
+                                                id={`${this.props.type}_sinst`}>
+                                                <h2>Parameters</h2>
+                                                <table
+                                                    className="params"
+                                                    id={`${this.props.type}_sparams`}>
+                                                    <tbody>
+                                                        {Object.keys(
+                                                            this.state.selected
+                                                                .SInst
+                                                        ).map(param => {
+                                                            return (
+                                                                <tr
+                                                                    key={
+                                                                        param +
+                                                                        this.state.selected.SInst[
+                                                                            param
+                                                                        ].toString()
+                                                                    }>
+                                                                    <td
+                                                                        dangerouslySetInnerHTML={{
+                                                                            __html: param
+                                                                        }}
                                                                     />
-                                                                </td>
-                                                            </tr>
-                                                        );
-                                                    })}
-                                                </tbody>
-                                            </table>
-                                        </div>
-                                    )}
+                                                                    <td>
+                                                                        <ParamInput
+                                                                            param={
+                                                                                param
+                                                                            }
+                                                                            value={
+                                                                                this
+                                                                                    .state
+                                                                                    .selected
+                                                                                    .SInst[
+                                                                                    param
+                                                                                ]
+                                                                            }
+                                                                            onChange={this.update_sinst.bind(
+                                                                                this
+                                                                            )}
+                                                                        />
+                                                                    </td>
+                                                                </tr>
+                                                            );
+                                                        })}
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        )}
                                     {this.state.selected &&
                                         this.props.classes[
                                             this.state.selected.ClassName
-                                        ].hasOwnProperty("DynamicInstParams") && (
+                                        ].hasOwnProperty(
+                                            "DynamicInstParams"
+                                        ) && (
                                             <div
                                                 className="info-box"
                                                 id={`${this.props.type}_dinst`}>
@@ -507,10 +560,14 @@ export default class ProgramItemsView extends Component {
                                                                             dinst.Name
                                                                         }>
                                                                         <td>
-                                                                            {dinst.Name}
+                                                                            {
+                                                                                dinst.Name
+                                                                            }
                                                                         </td>
                                                                         <td>
-                                                                            {dinst.Type}
+                                                                            {
+                                                                                dinst.Type
+                                                                            }
                                                                         </td>
                                                                     </tr>
                                                                 );
@@ -528,7 +585,9 @@ export default class ProgramItemsView extends Component {
                     <NewAiModal
                         id={`new_${this.props.type}_modal`}
                         classes={this.props.classes}
+                        show={this.state.showNew}
                         onSelect={this.add_new_ai.bind(this)}
+                        onHide={() => this.setState({ showNew: false })}
                     />
                 )}
             </div>

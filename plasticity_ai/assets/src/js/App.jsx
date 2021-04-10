@@ -6,7 +6,7 @@ import {
     Tabs,
     Tab,
     Spinner,
-    Badge,
+    Badge
 } from "react-bootstrap";
 import { FolderOpen, Save, SaveAlt } from "@material-ui/icons";
 import AiProgram from "./AIProg.jsx";
@@ -24,7 +24,7 @@ export default class App extends Component {
             modified: false,
             path: "",
             loading: false,
-            tree: null,
+            tree: null
         };
     }
 
@@ -43,7 +43,7 @@ export default class App extends Component {
             await pywebview.api.add_ai_item({
                 ai: new_ai,
                 prog: this.state.aiprog,
-                type: type,
+                type: type
             }),
             this.state.trans
         );
@@ -55,7 +55,7 @@ export default class App extends Component {
         let new_prog = new AiProgram(
             await pywebview.api.remove_ai_item({
                 idx,
-                prog: this.state.aiprog,
+                prog: this.state.aiprog
             }),
             this.state.trans
         );
@@ -77,7 +77,7 @@ export default class App extends Component {
             this.setState({
                 aiprog: new AiProgram(new_pio),
                 modified: true,
-                loading: false,
+                loading: false
             });
         });
     }
@@ -103,7 +103,7 @@ export default class App extends Component {
                             path: open_ai.path,
                             selected: null,
                             loading: false,
-                            tree: null,
+                            tree: null
                         });
                     else
                         this.setState({
@@ -112,7 +112,7 @@ export default class App extends Component {
                             path: open_ai.path,
                             selected: null,
                             loading: false,
-                            tree: null,
+                            tree: null
                         });
                 }
             });
@@ -123,7 +123,7 @@ export default class App extends Component {
         this.set_loading();
         const response = await pywebview.api.save_file({
             pio: this.state.aiprog.clone_pio(),
-            path,
+            path
         });
         if (response.error)
             alert(
@@ -139,16 +139,22 @@ export default class App extends Component {
             $("#ai_list").val(`AI_${idx}`);
         } else if (idx < this.state.aiprog.behaviors_offset) {
             cat = "action";
-            $("#action_list").val(`Action_${idx - this.state.aiprog.actions_offset}`);
+            $("#action_list").val(
+                `Action_${idx - this.state.aiprog.actions_offset}`
+            );
         } else if (idx < this.state.aiprog.queries_offset) {
             cat = "behavior";
-            $("#behavior_list").val(`Behavior_${idx - this.state.aiprog.behaviors}`);
+            $("#behavior_list").val(
+                `Behavior_${idx - this.state.aiprog.behaviors}`
+            );
         } else {
             cat = "query";
             $("#query_list").val(`Query_${idx - this.state.aiprog.queries}`);
         }
         this.setState({ tab: cat });
-        $(`#${cat}_list`)[0].dispatchEvent(new Event("change", { bubbles: true }));
+        $(`#${cat}_list`)[0].dispatchEvent(
+            new Event("change", { bubbles: true })
+        );
     }
 
     set_loading = () => this.setState({ loading: true });
@@ -181,7 +187,9 @@ export default class App extends Component {
                                 </Button>
                                 <Button
                                     disabled={!this.state.aiprog}
-                                    onClick={() => this.save_file(this.state.path)}
+                                    onClick={() =>
+                                        this.save_file(this.state.path)
+                                    }
                                     title="Save">
                                     <Save />
                                 </Button>
@@ -203,7 +211,9 @@ export default class App extends Component {
                             </Badge>
                         )}
                         {this.state.modified && (
-                            <Badge variant="success" style={{ paddingTop: "0.25rem" }}>
+                            <Badge
+                                variant="success"
+                                style={{ paddingTop: "0.25rem" }}>
                                 Modified
                             </Badge>
                         )}
@@ -222,13 +232,15 @@ export default class App extends Component {
                                 value={{
                                     aiprog: this.state.aiprog,
                                     trans: this.state.trans,
-                                    classes: this.state.classes,
+                                    classes: this.state.classes
                                 }}>
                                 <Tabs
                                     id="tabs"
                                     defaultActiveKey="ai"
                                     activeKey={this.state.tab}
-                                    onSelect={key => this.setState({ tab: key })}
+                                    onSelect={key =>
+                                        this.setState({ tab: key })
+                                    }
                                     transition={false}>
                                     <Tab
                                         eventKey="ai"
@@ -237,9 +249,15 @@ export default class App extends Component {
                                         {this.state.aiprog && (
                                             <ProgramItemsView
                                                 onAdd={this.add_ai.bind(this)}
-                                                onUpdate={this.update_item.bind(this)}
-                                                onRemove={this.remove_ai.bind(this)}
-                                                setLoading={this.set_loading.bind(this)}
+                                                onUpdate={this.update_item.bind(
+                                                    this
+                                                )}
+                                                onRemove={this.remove_ai.bind(
+                                                    this
+                                                )}
+                                                setLoading={this.set_loading.bind(
+                                                    this
+                                                )}
                                                 unsetLoading={this.unset_loading.bind(
                                                     this
                                                 )}
@@ -256,15 +274,25 @@ export default class App extends Component {
                                         {this.state.aiprog && (
                                             <ProgramItemsView
                                                 onAdd={this.add_ai.bind(this)}
-                                                onUpdate={this.update_item.bind(this)}
-                                                onRemove={this.remove_ai.bind(this)}
-                                                setLoading={this.set_loading.bind(this)}
+                                                onUpdate={this.update_item.bind(
+                                                    this
+                                                )}
+                                                onRemove={this.remove_ai.bind(
+                                                    this
+                                                )}
+                                                setLoading={this.set_loading.bind(
+                                                    this
+                                                )}
                                                 unsetLoading={this.unset_loading.bind(
                                                     this
                                                 )}
-                                                items={this.state.aiprog.actions}
+                                                items={
+                                                    this.state.aiprog.actions
+                                                }
                                                 type={"action"}
-                                                classes={this.state.classes.Actions}
+                                                classes={
+                                                    this.state.classes.Actions
+                                                }
                                             />
                                         )}
                                     </Tab>
@@ -275,16 +303,26 @@ export default class App extends Component {
                                         {this.state.aiprog && (
                                             <ProgramItemsView
                                                 onAdd={this.add_ai.bind(this)}
-                                                onUpdate={this.update_item.bind(this)}
-                                                onRemove={this.remove_ai.bind(this)}
-                                                setLoading={this.set_loading.bind(this)}
+                                                onUpdate={this.update_item.bind(
+                                                    this
+                                                )}
+                                                onRemove={this.remove_ai.bind(
+                                                    this
+                                                )}
+                                                setLoading={this.set_loading.bind(
+                                                    this
+                                                )}
                                                 unsetLoading={this.unset_loading.bind(
                                                     this
                                                 )}
                                                 label_list={true}
-                                                items={this.state.aiprog.behaviors}
+                                                items={
+                                                    this.state.aiprog.behaviors
+                                                }
                                                 type={"behavior"}
-                                                classes={this.state.classes.Behaviors}
+                                                classes={
+                                                    this.state.classes.Behaviors
+                                                }
                                             />
                                         )}
                                     </Tab>
@@ -295,16 +333,26 @@ export default class App extends Component {
                                         {this.state.aiprog && (
                                             <ProgramItemsView
                                                 onAdd={this.add_ai.bind(this)}
-                                                onUpdate={this.update_item.bind(this)}
-                                                onRemove={this.remove_ai.bind(this)}
-                                                setLoading={this.set_loading.bind(this)}
+                                                onUpdate={this.update_item.bind(
+                                                    this
+                                                )}
+                                                onRemove={this.remove_ai.bind(
+                                                    this
+                                                )}
+                                                setLoading={this.set_loading.bind(
+                                                    this
+                                                )}
                                                 unsetLoading={this.unset_loading.bind(
                                                     this
                                                 )}
                                                 label_list={true}
-                                                items={this.state.aiprog.queries}
+                                                items={
+                                                    this.state.aiprog.queries
+                                                }
                                                 type={"query"}
-                                                classes={this.state.classes.Querys}
+                                                classes={
+                                                    this.state.classes.Querys
+                                                }
                                             />
                                         )}
                                     </Tab>
@@ -313,7 +361,23 @@ export default class App extends Component {
                         </div>
                     </div>
                 </div>
-                {this.state.loading && <Spinner animation="border" />}
+                {this.state.loading && (
+                    <div
+                        style={{
+                            display: "flex",
+                            justifyContent: "center",
+                            alignItems: "center",
+                            position: "absolute",
+                            top: 0,
+                            left: 0,
+                            right: 0,
+                            bottom: 0,
+                            opacity: 0.75,
+                            backgroundColor: "#000"
+                        }}>
+                        <Spinner animation="border" />
+                    </div>
+                )}
             </>
         );
     }

@@ -1,4 +1,5 @@
 import React, { Component } from "react";
+import { Button, Modal } from "react-bootstrap";
 import { get_ai_label } from "./AIProg.jsx";
 
 export const PlasticContext = React.createContext("plastic");
@@ -17,10 +18,14 @@ export class ParamInput extends Component {
                 break;
             case "Int":
             case "U32":
-                new_val = { [this.type]: parseInt($(`#${this.props.param}`).val()) };
+                new_val = {
+                    [this.type]: parseInt($(`#${this.props.param}`).val())
+                };
                 break;
             case "F32":
-                new_val = { float: parseFloat($(`#${this.props.param}`).val()) };
+                new_val = {
+                    float: parseFloat($(`#${this.props.param}`).val())
+                };
                 break;
             case "Vec3":
                 new_val = [...this.state.value];
@@ -203,57 +208,49 @@ export class NewAiModal extends Component {
     constructor(props) {
         super(props);
         this.state = {
-            selected: "",
+            selected: ""
         };
     }
 
     render() {
         return (
-            <div id={this.props.id} className="modal" tabIndex="-1" role="dialog">
-                <div className="modal-dialog" role="document">
-                    <div className="modal-content">
-                        <div className="modal-header">
-                            <h5 className="modal-title">Add Program Entry</h5>
-                            <button
-                                type="button"
-                                className="close"
-                                data-dismiss="modal"
-                                aria-label="Close">
-                                <span aria-hidden="true">&times;</span>
-                            </button>
-                        </div>
-                        <div className="modal-body">
-                            <select
-                                onChange={e =>
-                                    this.setState({ selected: e.currentTarget.value })
-                                }>
-                                {Object.keys(this.props.classes).map(cls => (
-                                    <option key={cls} value={cls}>
-                                        {cls}
-                                    </option>
-                                ))}
-                            </select>
-                        </div>
-                        <div className="modal-footer">
-                            <button
-                                type="button"
-                                className="btn btn-primary"
-                                data-dismiss="modal"
-                                onClick={() =>
-                                    this.props.onSelect(this.state.selected)
-                                }>
-                                Add
-                            </button>
-                            <button
-                                type="button"
-                                className="btn btn-secondary"
-                                data-dismiss="modal">
-                                Close
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </div>
+            <Modal
+                show={this.props.show}
+                id={this.props.id}
+                onHide={this.props.onHide}>
+                <Modal.Header closeButton>
+                    <Modal.Title>Add Program Entry</Modal.Title>
+                </Modal.Header>
+                <Modal.Body>
+                    <select
+                        onChange={e =>
+                            this.setState({ selected: e.currentTarget.value })
+                        }>
+                        {Object.keys(this.props.classes).map(cls => (
+                            <option key={cls} value={cls}>
+                                {cls}
+                            </option>
+                        ))}
+                    </select>
+                </Modal.Body>
+                <Modal.Footer>
+                    <Button
+                        type="button"
+                        variant="primary"
+                        onClick={() => {
+                            this.props.onSelect(this.state.selected);
+                            this.props.onHide();
+                        }}>
+                        Add
+                    </Button>
+                    <Button
+                        type="button"
+                        variant="secondary"
+                        onClick={this.props.onHide}>
+                        Close
+                    </Button>
+                </Modal.Footer>
+            </Modal>
         );
     }
 }

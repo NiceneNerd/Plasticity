@@ -56,8 +56,8 @@ def cjk_detect(texts):
 
 
 def json_serialize(f) -> str:
-    def serializer(self, **kwargs):
-        data = f(self, **kwargs)
+    def serializer(self, *args, **kwargs):
+        data = f(self, *args, **kwargs)
         try:
             json_data = self._encoder.default(data)
             return json_data
