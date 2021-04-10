@@ -253,6 +253,7 @@ class AiProgJsonDecoder(json.JSONDecoder):
             "Int": lambda p: int(p["Int"]),
             "StringRef": lambda p: str(p["StringRef"]),
             "F32": lambda p: float(p["F32"]),
+            "Float": lambda p: float(p["Float"]),
             "String32": lambda p: oead.FixedSafeString32(str(p["String32"])),
             "Bool": lambda p: bool(p["Bool"]),
             "bool": lambda p: bool(p["Bool"]),
