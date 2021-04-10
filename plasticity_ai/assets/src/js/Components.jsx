@@ -24,7 +24,7 @@ export class ParamInput extends Component {
                 break;
             case "F32":
                 new_val = {
-                    Float: parseFloat($(`#${this.props.param}`).val())
+                    F32: parseFloat($(`#${this.props.param}`).val())
                 };
                 break;
             case "Vec3":
